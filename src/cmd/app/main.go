@@ -30,17 +30,19 @@ func run() (err error) {
 	)
 	defer cancel()
 
-	// TODO: Load config
-	cfg := Config{}
+	cfg, err := loadConfigFromEnv()
+	if err != nil {
+		return fmt.Errorf("load config: %w", err)
+	}
 
-	logger, err := getLogger(0, true) // TODO: from config
+	logger, err := getLogger(cfg.Logger.LogLevel, cfg.Logger.IsJSON)
 	if err != nil {
 		return fmt.Errorf("failed to get config: %w", err)
 	}
 	logger.Info("Logger setup successfully")
 
 	logger.Info("Connecting to SQL database")
-	sqlDB, err := newSQLDatabase()
+	sqlDB, err := newSQLDatabase(cfg.Database)
 	if err != nil {
 		return fmt.Errorf("create new sql database: %w", err)
 	}
@@ -60,8 +62,10 @@ func run() (err error) {
 		return fmt.Errorf("ping database: %w", err)
 	}
 
+	logger.Info("Connected to SQL database")
+
 	srv := &http.Server{
-		Addr: cfg.HTTPServer.Addr,
+		Addr: cfg.HTTPServer.ListenAddr,
 	}
 
 	errChan := make(chan error, 2)
@@ -109,8 +113,15 @@ func run() (err error) {
 	return
 }
 
-func newSQLDatabase() (*sql.DB, error) {
-	dbCfg := database.Config{} // TODO: from config
+func newSQLDatabase(cfg Database) (*sql.DB, error) {
+	dbCfg := database.Config{
+		Host:     cfg.Host,
+		Port:     cfg.Port,
+		User:     cfg.User,
+		Password: cfg.Password,
+		DBName:   cfg.DatabaseName,
+		SSLMode:  cfg.SSLMode,
+	}
 
 	return database.NewSQL(dbCfg)
 }
