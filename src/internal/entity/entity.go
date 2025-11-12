@@ -6,6 +6,11 @@ type Team struct {
 	Name  string // Unique
 	Users []User
 }
+
+func NewTeam(name string, users []User) Team {
+	t
+}
+
 type User struct {
 	ID       uuid.UUID // Unique, immutable
 	Name     string
