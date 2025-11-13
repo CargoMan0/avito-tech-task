@@ -119,7 +119,7 @@ func newSQLDatabase(cfg Database) (*sql.DB, error) {
 		Port:     cfg.Port,
 		User:     cfg.User,
 		Password: cfg.Password,
-		DBName:   cfg.DatabaseName,
+		DBName:   cfg.Name,
 		SSLMode:  cfg.SSLMode,
 	}
 

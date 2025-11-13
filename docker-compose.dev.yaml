@@ -1,23 +1,37 @@
 services:
   db:
     image: postgres:17.3
+    container_name: postgres-db
+    restart: no
     env_file:
       - .env
     environment:
-      POSTGRES_NAME: $POSTGRES_NAME
+      POSTGRES_NAME: $DATABASE_NAME
       POSTGRES_USER: $DATABASE_USER
       POSTGRES_PASSWORD: $DATABASE_PASSWORD
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   app:
+    container_name: my-app
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - .env
-    build:
-      dockerfile: Dockerfile
+    ports:
+      - "8080:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    restart: on-failure
 
 volumes:
   db_data:
