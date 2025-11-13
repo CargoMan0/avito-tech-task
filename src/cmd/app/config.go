@@ -18,12 +18,12 @@ type HTTPServer struct {
 }
 
 type Database struct {
-	Host         string `env:"HOST,notEmpty"`
-	Port         int    `env:"PORT,notEmpty"`
-	User         string `env:"USER,notEmpty"`
-	Password     string `env:"PASSWORD,notEmpty"`
-	DatabaseName string `env:"DATABASE_NAME,notEmpty"`
-	SSLMode      string `env:"SSL_MODE,notEmpty"`
+	Host     string `env:"HOST,notEmpty"`
+	Port     int    `env:"PORT,notEmpty"`
+	User     string `env:"USER,notEmpty"`
+	Password string `env:"PASSWORD,notEmpty"`
+	Name     string `env:"NAME,notEmpty"`
+	SSLMode  string `env:"SSL_MODE,notEmpty"`
 }
 
 type Logger struct {

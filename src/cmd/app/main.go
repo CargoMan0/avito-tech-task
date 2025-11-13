@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/CargoMan0/avito-tech-task/src/pkg/database"
+	"github.com/CargoMan0/avito-tech-task/pkg/database"
 	"log/slog"
 	"net/http"
 	"os"
@@ -17,7 +17,7 @@ import (
 func main() {
 	err := run()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "run() returned error: %v", err)
+		fmt.Fprintf(os.Stderr, "run() returned error: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -119,7 +119,7 @@ func newSQLDatabase(cfg Database) (*sql.DB, error) {
 		Port:     cfg.Port,
 		User:     cfg.User,
 		Password: cfg.Password,
-		DBName:   cfg.DatabaseName,
+		DBName:   cfg.Name,
 		SSLMode:  cfg.SSLMode,
 	}
 
