@@ -17,4 +17,6 @@ COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # This is for clarity when using top or htop
 COPY --from=build /out/app /bin/app
 
+EXPOSE 8080
+
 CMD ["/bin/app"]
