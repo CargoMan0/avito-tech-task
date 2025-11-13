@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/CargoMan0/avito-tech-task/pkg/database"
+	"github.com/CargoMan0/avito-tech-task/pkg/migrations"
 	"log/slog"
 	"net/http"
 	"os"
@@ -63,6 +64,17 @@ func run() (err error) {
 	}
 
 	logger.Info("Connected to SQL database")
+
+	if cfg.Migrations.Enabled {
+		logger.Info("Migrations enabled - running migrations")
+		err = migrations.Run(ctx, sqlDB, cfg.Migrations.Dir)
+		if err != nil {
+			return fmt.Errorf("run migrations: %w", err)
+		}
+		logger.Info("Successfully run migrations")
+	} else {
+		logger.Info("Migrations disabled - skipping migrations")
+	}
 
 	srv := &http.Server{
 		Addr: cfg.HTTPServer.ListenAddr,

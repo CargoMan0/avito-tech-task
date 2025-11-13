@@ -10,6 +10,7 @@ type Config struct {
 	HTTPServer HTTPServer `envPrefix:"HTTP_SERVER_"`
 	Database   Database   `envPrefix:"DATABASE_"`
 	Logger     Logger     `envPrefix:"LOGGER_"`
+	Migrations Migrations `envPrefix:"MIGRATIONS_"`
 }
 
 type HTTPServer struct {
@@ -29,6 +30,11 @@ type Database struct {
 type Logger struct {
 	LogLevel int  `env:"LOG_LEVEL,notEmpty"`
 	IsJSON   bool `env:"IS_JSON,notEmpty"`
+}
+
+type Migrations struct {
+	Dir     string `env:"DIR,notEmpty"`
+	Enabled bool   `env:"ENABLED" envDefault:"false"`
 }
 
 func loadConfigFromEnv() (Config, error) {
