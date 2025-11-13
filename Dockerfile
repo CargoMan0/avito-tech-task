@@ -12,6 +12,7 @@ RUN go build -o /out/my-app ./cmd/app
 
 FROM scratch
 
+COPY migrations/ /migrations
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # This is for clarity when using top or htop
 COPY --from=build /out/my-app /bin/my-app
