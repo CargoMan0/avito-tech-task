@@ -1,0 +1,12 @@
+services:
+  app:
+    image: $IMAGE
+    env_file: $ENV_FILE
+    ports:
+      - "127.0.0.1:8080:3000"
+    networks:
+      - global
+
+networks:
+  global:
+    external: true
