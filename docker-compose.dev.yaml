@@ -3,11 +3,17 @@ services:
     image: postgres:17.3
     env_file:
       - .env
+    environment:
+      POSTGRES_NAME: $POSTGRES_NAME
+      POSTGRES_USER: $DATABASE_USER
+      POSTGRES_PASSWORD: $DATABASE_PASSWORD
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
   app:
+    env_file:
+      - .env
     build:
       dockerfile: Dockerfile
     depends_on:
