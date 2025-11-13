@@ -1,14 +1,10 @@
-package entity
+package domain
 
 import "github.com/google/uuid"
 
 type Team struct {
 	Name  string // Unique
 	Users []User
-}
-
-func NewTeam(name string, users []User) Team {
-	t
 }
 
 type User struct {
@@ -24,6 +20,10 @@ type PullRequest struct {
 	Status            PullRequestStatus
 	Reviewers         []User
 	NeedMoreReviewers bool
+}
+
+func NeedMoreReviewers(users []User) bool {
+	return len(users) < 3
 }
 
 type PullRequestStatus uint8
