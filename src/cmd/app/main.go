@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/CargoMan0/avito-tech-task/internal/http/handlers/routes"
+	"github.com/CargoMan0/avito-tech-task/internal/repository/impl"
+	"github.com/CargoMan0/avito-tech-task/internal/service"
 	"github.com/CargoMan0/avito-tech-task/pkg/database"
 	"github.com/CargoMan0/avito-tech-task/pkg/migrations"
 	"log/slog"
@@ -76,8 +79,24 @@ func run() (err error) {
 		logger.Info("Migrations disabled - skipping migrations")
 	}
 
+	// Repositories
+	pullRequestsRepo := impl.NewPullRequestRepository(sqlDB)
+	usersRepo := impl.NewUserRepository(sqlDB)
+	teamsRepo := impl.NewTeamRepository(sqlDB)
+
+	// Service
+	srvc := service.NewService(
+		pullRequestsRepo,
+		usersRepo,
+		teamsRepo,
+	)
+
+	mux := http.NewServeMux()
+	routes.SetupRoutes(mux, srvc)
+
 	srv := &http.Server{
-		Addr: cfg.HTTPServer.ListenAddr,
+		Addr:    cfg.HTTPServer.ListenAddr,
+		Handler: mux,
 	}
 
 	errChan := make(chan error, 2)
