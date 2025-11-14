@@ -3,31 +3,74 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"github.com/CargoMan0/avito-tech-task/src/internal/service"
+	"github.com/CargoMan0/avito-tech-task/internal/service"
+	"log"
 	"net/http"
 )
 
-func handleError(w http.ResponseWriter, err error) {
+const (
+	ErrCodeBadRequest       = "BAD_REQUEST"
+	ErrCodeTeamExists       = "TEAM_EXISTS"
+	ErrCodeResourceNotFound = "RESOURCE_NOT_FOUND"
+	ErrCodePRExists         = "PR_EXISTS"
+	ErrCodePRMerged         = "PR_MERGED"
+	ErrCodeNotAssigned      = "NOT_ASSIGNED"
+	ErrCodeUserDuplicated   = "USER_DUPLICATED"
+)
+
+func handleDomainError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 
 	switch {
 	case errors.Is(err, service.ErrTeamAlreadyExists):
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]any{
-			"error":   "TEAM_EXISTS",
-			"message": "team_name already exists",
+		json.NewEncoder(w).Encode(errorResponse{
+			Error:   ErrCodeTeamExists,
+			Message: "team_name already exists",
 		})
 	case errors.Is(err, service.ErrPRAlreadyExists):
 		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(map[string]any{
-			"error":   "PR_EXISTS",
-			"message": "PR id already exists",
+		json.NewEncoder(w).Encode(errorResponse{
+			Error:   ErrCodePRExists,
+			Message: "PR id already exists",
 		})
 	case errors.Is(err, service.ErrNotFound):
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]any{
-			"error":   "NOT_FOUND",
-			"message": "resource not found",
+		json.NewEncoder(w).Encode(errorResponse{
+			Error:   ErrCodeResourceNotFound,
+			Message: "resource not found",
 		})
+	case errors.Is(err, service.ErrUserNotAssignedToPR):
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(errorResponse{
+			Error:   ErrCodeNotAssigned,
+			Message: "reviewer is not assigned to this PR",
+		})
+	case errors.Is(err, service.ErrPRAlreadyMerged):
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(errorResponse{
+			Error:   ErrCodePRMerged,
+			Message: "cannot reassign on merged PR",
+		})
+	case errors.Is(err, service.ErrUserDuplicated):
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(errorResponse{
+			Error:   ErrCodeUserDuplicated,
+			Message: "duplicated user in team",
+		})
+
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Print(err.Error())
 	}
+}
+
+func writeJSONError(w http.ResponseWriter, status int, code, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	json.NewEncoder(w).Encode(errorResponse{
+		Error:   code,
+		Message: message,
+	})
 }
