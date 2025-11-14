@@ -37,7 +37,7 @@ func (t *TeamRepository) CreateTeam(ctx context.Context, data *domain.Team) (err
 		}
 	}()
 
-	teamID := uuid.New()
+	teamID := uuid.New() // Technical ID inside the database
 	_, err = tx.ExecContext(ctx, insertTeamQuery, teamID, data.Name)
 	if err != nil {
 		return fmt.Errorf("exec insert team sql query: %w", err)
@@ -77,8 +77,8 @@ func (t *TeamRepository) CreateTeam(ctx context.Context, data *domain.Team) (err
 
 func (t *TeamRepository) GetTeam(ctx context.Context, name string) (*domain.Team, error) {
 	const (
-		getTeamQuery  = `SELECT id FROM teams WHERE name = $1`
-		getUsersQuery = `SELECT id, name, is_active FROM users WHERE team_id = $1`
+		getTeamQuery        = `SELECT id FROM teams WHERE name = $1`
+		getTeamMembersQuery = `SELECT id, name, is_active FROM users WHERE team_id = $1`
 	)
 
 	team := domain.Team{
@@ -92,20 +92,21 @@ func (t *TeamRepository) GetTeam(ctx context.Context, name string) (*domain.Team
 			return nil, repository.ErrRepoNotFound
 		}
 
-		return nil, fmt.Errorf("get team: %w", err)
+		return nil, fmt.Errorf("exec get team sql query: %w", err)
 	}
 
-	rows, err := t.db.QueryContext(ctx, getUsersQuery, teamID)
+	rows, err := t.db.QueryContext(ctx, getTeamMembersQuery, teamID)
 	if err != nil {
-		return nil, fmt.Errorf("get users: %w", err)
+		return nil, fmt.Errorf("exec get team members sql query: %w", err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var u domain.User
-		if err := rows.Scan(&u.ID, &u.Name, &u.IsActive); err != nil {
-			return nil, fmt.Errorf("scan user: %w", err)
+		if err = rows.Scan(&u.ID, &u.Name, &u.IsActive); err != nil {
+			return nil, fmt.Errorf("scan row into struct: %w", err)
 		}
+
 		team.Users = append(team.Users, u)
 	}
 
@@ -118,13 +119,29 @@ func (t *TeamRepository) TeamExists(ctx context.Context, name string) (bool, err
 	var exists bool
 	err := t.db.QueryRowContext(ctx, query, name).Scan(&exists)
 	if err != nil {
-		return false, fmt.Errorf("run sql query: %w", err)
+		return false, fmt.Errorf("exec team exists sql query: %w", err)
 	}
 
 	return exists, nil
 }
 
-func (t *TeamRepository) GetTeamByUserID(ctx context.Context, userID uuid.UUID) (*domain.Team, error) {
-	const query = `SELECT id, name FROM teams WHERE id = $1`
-	return nil, nil
+func (t *TeamRepository) GetTeamMembers(ctx context.Context, name string) ([]domain.User, error) {
+	const query = `SELECT id, name, is_active FROM users WHERE name = $1`
+	rows, err := t.db.QueryContext(ctx, query, name)
+	if err != nil {
+		return nil, fmt.Errorf("run get team members sql query: %w", err)
+	}
+	defer rows.Close()
+
+	var users []domain.User
+	for rows.Next() {
+		var u domain.User
+		if err = rows.Scan(&u.ID, &u.Name, &u.IsActive); err != nil {
+			return nil, fmt.Errorf("scan user into struct: %w", err)
+		}
+
+		users = append(users, u)
+	}
+
+	return users, nil
 }
