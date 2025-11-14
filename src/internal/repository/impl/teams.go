@@ -123,3 +123,8 @@ func (t *TeamRepository) TeamExists(ctx context.Context, name string) (bool, err
 
 	return exists, nil
 }
+
+func (t *TeamRepository) GetTeamByUserID(ctx context.Context, userID uuid.UUID) (*domain.Team, error) {
+	const query = `SELECT id, name FROM teams WHERE id = $1`
+	return nil, nil
+}

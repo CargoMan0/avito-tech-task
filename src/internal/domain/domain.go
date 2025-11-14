@@ -9,13 +9,14 @@ type Team struct {
 
 type User struct {
 	ID       uuid.UUID // Unique, immutable
+	TeamName string    // Name of the team, which user
 	Name     string
 	IsActive bool
 }
 
 type PullRequest struct {
 	ID                uuid.UUID // Unique, immutable
-	AuthorID          uuid.UUID
+	AuthorID          uuid.UUID // Immutable
 	Name              string
 	Status            PullRequestStatus
 	Reviewers         []User

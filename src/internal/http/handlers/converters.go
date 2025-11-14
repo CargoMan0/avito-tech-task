@@ -38,6 +38,15 @@ func teamMemberDTOToDomain(dto teamMemberDTO) (domain.User, error) {
 	return user, nil
 }
 
+func pullRequestFromDomain(pullRequest domain.PullRequest) pullRequestDTO {
+	return pullRequestDTO{
+		PullRequestID:   pullRequest.ID.String(),
+		AuthorID:        pullRequest.AuthorID.String(),
+		PullRequestName: pullRequest.Name,
+		Status:          convertPRStatusFromDomain(pullRequest.Status),
+	}
+}
+
 func tryConvertStatusToDomain(status string) (domain.PullRequestStatus, error) {
 	switch status {
 	case "MERGED":

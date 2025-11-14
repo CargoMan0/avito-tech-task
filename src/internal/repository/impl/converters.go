@@ -18,7 +18,7 @@ func statusFromDomainToEnum(s domain.PullRequestStatus) string {
 }
 
 type PRStatusScanner struct {
-	Type domain.PullRequestStatus
+	Status domain.PullRequestStatus
 }
 
 func (p *PRStatusScanner) Scan(src any) error {
@@ -39,10 +39,10 @@ func (p *PRStatusScanner) Scan(src any) error {
 func (p *PRStatusScanner) scanString(v string) error {
 	switch v {
 	case "OPEN":
-		p.Type = domain.PullRequestStatusOpen
+		p.Status = domain.PullRequestStatusOpen
 		return nil
 	case "MERGED":
-		p.Type = domain.PullRequestStatusMerged
+		p.Status = domain.PullRequestStatusMerged
 		return nil
 	default:
 		return fmt.Errorf("unknown enum value %s", v)

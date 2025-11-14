@@ -61,9 +61,40 @@ func PostUsersSetIsActive(svc *service.Service) http.HandlerFunc {
 
 func GetUsersReview(svc *service.Service) http.HandlerFunc {
 	type response struct {
-		UserId       string           `json:"user_id"`
+		UserID       string           `json:"user_id"`
 		PullRequests []pullRequestDTO `json:"pull_requests"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {}
+	return func(w http.ResponseWriter, r *http.Request) {
+		userIDStr := r.URL.Query().Get("user_id")
+
+		userID, err := uuid.Parse(userIDStr)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, ErrCodeBadRequest, "invalid user_id")
+			return
+		}
+
+		ctx := r.Context()
+		prs, err := svc.GetUserReviews(ctx, userID)
+		if err != nil {
+			handleDomainError(w, err)
+			return
+		}
+
+		resp := response{
+			UserID:       userID.String(),
+			PullRequests: make([]pullRequestDTO, 0, len(prs)),
+		}
+		for _, pr := range prs {
+			resp.PullRequests = append(resp.PullRequests, pullRequestFromDomain(pr))
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		err = json.NewEncoder(w).Encode(resp)
+		if err != nil {
+			return
+		}
+	}
 }
