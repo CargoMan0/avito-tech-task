@@ -1,7 +1,12 @@
 package repository
 
-type TeamRepository interface{}
+import (
+	"context"
+	"github.com/CargoMan0/avito-tech-task/internal/domain"
+)
 
-type UserRepository interface{}
-
-type PullRequestRepository interface{}
+type TeamRepository interface {
+	CreateTeam(ctx context.Context, data *domain.Team) error
+	GetTeam(ctx context.Context, name string) (*domain.Team, error)
+	TeamExists(ctx context.Context, name string) (bool, error)
+}
