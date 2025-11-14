@@ -9,13 +9,11 @@ import (
 )
 
 const (
-	ErrCodeBadRequest       = "BAD_REQUEST"
 	ErrCodeTeamExists       = "TEAM_EXISTS"
-	ErrCodeResourceNotFound = "RESOURCE_NOT_FOUND"
 	ErrCodePRExists         = "PR_EXISTS"
 	ErrCodePRMerged         = "PR_MERGED"
 	ErrCodeNotAssigned      = "NOT_ASSIGNED"
-	ErrCodeUserDuplicated   = "USER_DUPLICATED"
+	ErrCodeResourceNotFound = "RESOURCE_NOT_FOUND"
 )
 
 func handleDomainError(w http.ResponseWriter, err error) {
@@ -52,25 +50,17 @@ func handleDomainError(w http.ResponseWriter, err error) {
 			Error:   ErrCodePRMerged,
 			Message: "cannot reassign on merged PR",
 		})
-	case errors.Is(err, service.ErrUserDuplicated):
-		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(errorResponse{
-			Error:   ErrCodeUserDuplicated,
-			Message: "duplicated user in team",
-		})
-
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Print(err.Error())
 	}
 }
 
-func writeJSONError(w http.ResponseWriter, status int, code, message string) {
+func writeJSONError(w http.ResponseWriter, status int, errorMessage string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	json.NewEncoder(w).Encode(errorResponse{
-		Error:   code,
-		Message: message,
-	})
+	json.NewEncoder(w).Encode(map[string]string{
+		"error": errorMessage},
+	)
 }
