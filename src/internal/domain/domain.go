@@ -4,12 +4,12 @@ import "github.com/google/uuid"
 
 type Team struct {
 	Name  string // Unique
-	Users []User
+	Users []User // Team members
 }
 
 type User struct {
 	ID       uuid.UUID // Unique, immutable
-	TeamName string    // Name of the team, which user
+	TeamName string
 	Name     string
 	IsActive bool
 }
@@ -23,8 +23,10 @@ type PullRequest struct {
 	NeedMoreReviewers bool
 }
 
-func NeedMoreReviewers(users []User) bool {
-	return len(users) < 3
+const MaxReviewers = 2
+
+func (pr *PullRequest) CheckIfNeedMoreReviewers() bool {
+	return len(pr.Reviewers) < MaxReviewers
 }
 
 type PullRequestStatus uint8
