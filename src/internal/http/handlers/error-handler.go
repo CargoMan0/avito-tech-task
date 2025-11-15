@@ -14,6 +14,7 @@ const (
 	ErrCodePRMerged         = "PR_MERGED"
 	ErrCodeNotAssigned      = "NOT_ASSIGNED"
 	ErrCodeResourceNotFound = "RESOURCE_NOT_FOUND"
+	ErrCodeNoCandidate      = "NO_CANDIDATE"
 )
 
 func handleDomainError(w http.ResponseWriter, err error) {
@@ -49,6 +50,12 @@ func handleDomainError(w http.ResponseWriter, err error) {
 		json.NewEncoder(w).Encode(errorResponse{
 			Error:   ErrCodePRMerged,
 			Message: "cannot reassign on merged PR",
+		})
+	case errors.Is(err, service.ErrPRNoSuitableCandidates):
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(errorResponse{
+			Error:   ErrCodeNoCandidate,
+			Message: "no active replacement candidate in team",
 		})
 	default:
 		w.WriteHeader(http.StatusInternalServerError)

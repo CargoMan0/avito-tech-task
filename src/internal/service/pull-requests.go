@@ -63,10 +63,6 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 		return nil, uuid.Nil, fmt.Errorf("pull request repository: get pull request by reviewer id: %w", err)
 	}
 
-	if pr.Status == domain.PullRequestStatusMerged {
-		return nil, uuid.Nil, ErrPRAlreadyMerged
-	}
-
 	userIDs := make([]uuid.UUID, 0, len(pr.Reviewers))
 	for _, reviewer := range pr.Reviewers {
 		userIDs = append(userIDs, reviewer.ID)
@@ -74,6 +70,10 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 
 	if !slices.Contains(userIDs, oldReviewerID) {
 		return nil, uuid.Nil, ErrUserNotAssignedToPR
+	}
+
+	if pr.Status == domain.PullRequestStatusMerged {
+		return nil, uuid.Nil, ErrPRAlreadyMerged
 	}
 
 	user, err := s.userRepository.GetUserByID(ctx, pr.AuthorID)
@@ -95,6 +95,20 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 	}
 
 	reviewers := chooseReviewers(team.Users, oldReviewerID, 1)
+
+	prReviewers := make([]domain.User, 0, len(reviewers))
+	for _, reviewer := range pr.Reviewers {
+		if reviewer.ID == oldReviewerID || reviewer.ID == pr.AuthorID {
+			continue
+		}
+
+		prReviewers = append(prReviewers, reviewer)
+	}
+
+	if len(prReviewers) == 0 {
+		return nil, uuid.Nil, ErrPRNoSuitableCandidates
+	}
+	pr.Reviewers = reviewers
 
 	newReviewerID := reviewers[0].ID
 	err = s.pullRequestRepository.UpdatePullRequestReviewer(ctx, pr.ID, oldReviewerID, newReviewerID)
@@ -120,6 +134,7 @@ func (s *Service) MergePullRequest(ctx context.Context, pullRequestID uuid.UUID)
 
 	mergedAt := time.Now()
 	pr.MergedAt = &mergedAt
+	pr.Status = domain.PullRequestStatusMerged
 
 	err = s.pullRequestRepository.UpdatePullRequestStatusAndMergedAt(ctx, domain.PullRequestStatusMerged, pullRequestID, mergedAt)
 	if err != nil {

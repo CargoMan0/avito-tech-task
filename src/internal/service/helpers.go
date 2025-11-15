@@ -10,7 +10,7 @@ import (
 func chooseReviewers(users []domain.User, authorID uuid.UUID, maxReviewers int) []domain.User {
 	candidates := make([]domain.User, 0, len(users))
 	for _, u := range users {
-		if u.ID != authorID {
+		if u.ID != authorID || u.IsActive {
 			candidates = append(candidates, u)
 		}
 	}

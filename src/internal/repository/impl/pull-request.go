@@ -89,14 +89,26 @@ func (p *PullRequestRepository) CreatePullRequest(ctx context.Context, pr *domai
 }
 
 func (p *PullRequestRepository) GetPullRequestByID(ctx context.Context, pullRequestID uuid.UUID) (*domain.PullRequest, error) {
-	const query = `SELECT name, author_id, status, need_more_reviewers, merged_at FROM pull_requests WHERE id = $1`
+	const (
+		getPRQuery          = `SELECT name, author_id, status, need_more_reviewers, merged_at FROM pull_requests WHERE id = $1`
+		getPRReviewersQuery = `SELECT prtr.user_id,
+                                      u.name AS user_name,
+                                      u.is_active,
+                                      t.name AS team_name
+                                      FROM pull_requests_to_reviewers prtr
+                                      LEFT JOIN users u on u.id = prtr.user_id
+                                      LEFT JOIN teams t ON u.team_id = t.id
+                                      WHERE prtr.pull_request_id = $1`
+	)
 
 	pr := domain.PullRequest{
-		ID: pullRequestID,
+		ID:        pullRequestID,
+		Reviewers: make([]domain.User, 0),
 	}
 
 	nullTimeScanner := sql.NullTime{}
-	err := p.db.QueryRowContext(ctx, query, pullRequestID).Scan(&pr.Name, &pr.AuthorID, &pr.Status, &pr.NeedMoreReviewers, &nullTimeScanner)
+	sc := PRStatusScanner{}
+	err := p.db.QueryRowContext(ctx, getPRQuery, pullRequestID).Scan(&pr.Name, &pr.AuthorID, &sc, &pr.NeedMoreReviewers, &nullTimeScanner)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, repository.ErrRepoNotFound
@@ -105,8 +117,26 @@ func (p *PullRequestRepository) GetPullRequestByID(ctx context.Context, pullRequ
 		return nil, fmt.Errorf("run get pull request by id sql query: %w", err)
 	}
 
+	pr.Status = sc.Status
 	if nullTimeScanner.Valid {
 		pr.MergedAt = &nullTimeScanner.Time
+	}
+
+	rows, err := p.db.QueryContext(ctx, getPRReviewersQuery, pullRequestID)
+	if err != nil {
+		return nil, fmt.Errorf("run get pull request reviewers sql query: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		user := domain.User{}
+
+		err = rows.Scan(&user.ID, &user.Name, &user.IsActive, &user.TeamName)
+		if err != nil {
+			return nil, fmt.Errorf("scan row into struct: %w", err)
+		}
+
+		pr.Reviewers = append(pr.Reviewers, user)
 	}
 
 	return &pr, nil
@@ -145,7 +175,7 @@ func (p *PullRequestRepository) UpdatePullRequestStatusAndMergedAt(ctx context.C
 
 	res, err := p.db.ExecContext(ctx, query, statusSQL, mergedAt, pullRequestID)
 	if err != nil {
-		return fmt.Errorf("exec update pull request status query: %w", err)
+		return fmt.Errorf("exec update pull request status sql query: %w", err)
 	}
 
 	rowsAffected, err := res.RowsAffected()
@@ -162,7 +192,7 @@ func (p *PullRequestRepository) UpdatePullRequestStatusAndMergedAt(ctx context.C
 func (p *PullRequestRepository) UpdatePullRequestReviewer(ctx context.Context, pullRequestID, oldReviewerID, newReviewerID uuid.UUID) error {
 	const query = `UPDATE pull_requests_to_reviewers SET user_id = $1 WHERE user_id = $2 AND pull_request_id = $3`
 
-	res, err := p.db.ExecContext(ctx, query, pullRequestID, newReviewerID, oldReviewerID, pullRequestID)
+	res, err := p.db.ExecContext(ctx, query, newReviewerID, oldReviewerID, pullRequestID)
 	if err != nil {
 		return fmt.Errorf("exec update pull request reviewer sql query: %w", err)
 	}
