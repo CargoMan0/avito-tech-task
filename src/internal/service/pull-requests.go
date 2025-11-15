@@ -8,7 +8,6 @@ import (
 	"github.com/CargoMan0/avito-tech-task/internal/repository"
 	"github.com/CargoMan0/avito-tech-task/internal/service/dto"
 	"github.com/google/uuid"
-	"slices"
 	"time"
 )
 
@@ -42,7 +41,16 @@ func (s *Service) CreatePullRequest(ctx context.Context, data *dto.CreatePullReq
 		return nil, fmt.Errorf("team repository: get team by user id: %w", err)
 	}
 
-	pr.Reviewers = chooseReviewers(team.Users, pr.AuthorID, domain.MaxReviewers)
+	reviewers := make([]domain.User, 0)
+	for _, teamUser := range team.Users {
+		if teamUser.ID == data.AuthorID || !teamUser.IsActive {
+			continue
+		}
+
+		reviewers = append(reviewers, teamUser)
+	}
+
+	pr.Reviewers = chooseReviewersRandomly(reviewers, domain.MaxReviewers)
 	pr.NeedMoreReviewers = pr.CheckIfNeedMoreReviewers()
 
 	err = s.pullRequestRepository.CreatePullRequest(ctx, pr)
@@ -63,12 +71,17 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 		return nil, uuid.Nil, fmt.Errorf("pull request repository: get pull request by reviewer id: %w", err)
 	}
 
-	userIDs := make([]uuid.UUID, 0, len(pr.Reviewers))
+	seen := make(map[uuid.UUID]struct{})
 	for _, reviewer := range pr.Reviewers {
-		userIDs = append(userIDs, reviewer.ID)
+		_, ok := seen[reviewer.ID]
+		if ok {
+			continue
+		}
+
+		seen[reviewer.ID] = struct{}{}
 	}
 
-	if !slices.Contains(userIDs, oldReviewerID) {
+	if _, ok := seen[oldReviewerID]; !ok {
 		return nil, uuid.Nil, ErrUserNotAssignedToPR
 	}
 
@@ -94,23 +107,26 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 		return nil, uuid.Nil, fmt.Errorf("team repository: get team: %w", err)
 	}
 
-	reviewers := chooseReviewers(team.Users, oldReviewerID, 1)
+	// TODO: Fix wrong reviewer choosing here.
 
-	prReviewers := make([]domain.User, 0, len(reviewers))
-	for _, reviewer := range pr.Reviewers {
-		if reviewer.ID == oldReviewerID || reviewer.ID == pr.AuthorID {
+	suitableReviewers := make([]domain.User, 0)
+	for _, teamUser := range team.Users {
+		if !teamUser.IsActive {
+			continue
+		}
+		if teamUser.ID == pr.AuthorID || teamUser.ID == oldReviewerID {
 			continue
 		}
 
-		prReviewers = append(prReviewers, reviewer)
+		suitableReviewers = append(suitableReviewers, teamUser)
 	}
-
-	if len(prReviewers) == 0 {
+	if len(suitableReviewers) == 0 {
 		return nil, uuid.Nil, ErrPRNoSuitableCandidates
 	}
-	pr.Reviewers = reviewers
 
-	newReviewerID := reviewers[0].ID
+	pr.Reviewers = suitableReviewers
+	newReviewerID := chooseReviewersRandomly(suitableReviewers, 1)[0].ID
+
 	err = s.pullRequestRepository.UpdatePullRequestReviewer(ctx, pr.ID, oldReviewerID, newReviewerID)
 	if err != nil {
 		return nil, uuid.Nil, fmt.Errorf("pull request repository: update pull request reviewer: %w", err)

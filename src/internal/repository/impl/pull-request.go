@@ -142,11 +142,20 @@ func (p *PullRequestRepository) GetPullRequestByID(ctx context.Context, pullRequ
 	return &pr, nil
 }
 
-func (p *PullRequestRepository) GetPullRequestsByReviewerID(ctx context.Context, authorID uuid.UUID) (_ []domain.PullRequest, err error) {
-	const query = `SELECT id, name, status, need_more_reviewers FROM pull_requests WHERE author_id = $1`
+func (p *PullRequestRepository) GetPullRequestsByReviewerID(ctx context.Context, reviewerID uuid.UUID) (_ []domain.PullRequest, err error) {
+	const query = `SELECT pr.id, 
+                          pr.name, 
+                          pr.status, 
+                          pr.need_more_reviewers, 
+                          pr.author_id,
+                          pr.merged_at
+                          FROM pull_requests pr
+                          LEFT JOIN pull_requests_to_reviewers prtr 
+                          ON prtr.pull_request_id = pr.id
+                          WHERE prtr.user_id = $1`
 
 	res := make([]domain.PullRequest, 0)
-	rows, err := p.db.QueryContext(ctx, query, authorID)
+	rows, err := p.db.QueryContext(ctx, query, reviewerID)
 	if err != nil {
 		return nil, fmt.Errorf("run get pull requests by reviewers sql query: %w", err)
 	}
@@ -154,13 +163,15 @@ func (p *PullRequestRepository) GetPullRequestsByReviewerID(ctx context.Context,
 
 	for rows.Next() {
 		pr := domain.PullRequest{}
+		nullTimeScanner := sql.NullTime{}
 		sc := PRStatusScanner{}
 
-		err = rows.Scan(&pr.ID, &pr.Name, &sc, &pr.NeedMoreReviewers)
+		err = rows.Scan(&pr.ID, &pr.Name, &sc, &pr.NeedMoreReviewers, &pr.AuthorID, &nullTimeScanner)
 		if err != nil {
 			return nil, fmt.Errorf("scan row into struct: %w", err)
 		}
 
+		pr.MergedAt = &nullTimeScanner.Time
 		pr.Status = sc.Status
 		res = append(res, pr)
 	}
