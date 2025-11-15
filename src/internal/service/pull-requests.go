@@ -118,7 +118,7 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 			continue
 		}
 
-		suitableReviewers = append(suitableReviewers, *user)
+		suitableReviewers = append(suitableReviewers, teamUser)
 	}
 
 	if len(suitableReviewers) == 0 {
