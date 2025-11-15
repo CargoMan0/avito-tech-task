@@ -36,7 +36,7 @@ func (p *PullRequestRepository) PullRequestExists(ctx context.Context, pullReque
 
 func (p *PullRequestRepository) CreatePullRequest(ctx context.Context, pr *domain.PullRequest) (err error) {
 	const (
-		insertPRQuery          = `INSERT INTO pull_requests (id, name, author_id, status, need_more_reviewers)  VALUES ($1, $2, $3, $4, $5);`
+		insertPRQuery          = `INSERT INTO pull_requests (id, created_at, name, author_id, status, need_more_reviewers)  VALUES ($1, $2, $3, $4, $5, $6);`
 		insertPRReviewersQuery = `INSERT INTO pull_requests_to_reviewers (pull_request_id, user_id) VALUES %s;`
 	)
 
@@ -54,7 +54,7 @@ func (p *PullRequestRepository) CreatePullRequest(ctx context.Context, pr *domai
 	}()
 
 	statusSQL := statusFromDomainToEnum(pr.Status)
-	err = tx.QueryRowContext(ctx, insertPRQuery, pr.ID, pr.Name, pr.AuthorID, statusSQL, pr.NeedMoreReviewers).Err()
+	err = tx.QueryRowContext(ctx, insertPRQuery, pr.ID, time.Now(), pr.Name, pr.AuthorID, statusSQL, pr.NeedMoreReviewers).Err()
 	if err != nil {
 		return fmt.Errorf("run insert pull request sql query: %w", err)
 	}
