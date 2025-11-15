@@ -33,7 +33,7 @@ func (s *Service) CreatePullRequest(ctx context.Context, data *dto.CreatePullReq
 			return nil, ErrNotFound
 		}
 
-		return nil, fmt.Errorf("user repository: get user: %w", err)
+		return nil, fmt.Errorf("user repository: get user by id: %w", err)
 	}
 
 	team, err := s.teamRepository.GetTeam(ctx, user.TeamName)
@@ -71,17 +71,12 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 		return nil, uuid.Nil, fmt.Errorf("pull request repository: get pull request by reviewer id: %w", err)
 	}
 
-	seen := make(map[uuid.UUID]struct{})
-	for _, reviewer := range pr.Reviewers {
-		_, ok := seen[reviewer.ID]
-		if ok {
-			continue
-		}
-
-		seen[reviewer.ID] = struct{}{}
+	currentReviewers := make(map[uuid.UUID]struct{})
+	for _, r := range pr.Reviewers {
+		currentReviewers[r.ID] = struct{}{}
 	}
 
-	if _, ok := seen[oldReviewerID]; !ok {
+	if _, ok := currentReviewers[oldReviewerID]; !ok {
 		return nil, uuid.Nil, ErrUserNotAssignedToPR
 	}
 
@@ -107,32 +102,37 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 		return nil, uuid.Nil, fmt.Errorf("team repository: get team: %w", err)
 	}
 
-	// TODO: Fix wrong reviewer choosing here.
+	suitableReviewers := make([]domain.User, 0, len(team.Users))
 
-	suitableReviewers := make([]domain.User, 0)
 	for _, teamUser := range team.Users {
 		if !teamUser.IsActive {
 			continue
 		}
-		if teamUser.ID == pr.AuthorID || teamUser.ID == oldReviewerID {
+		if teamUser.ID == pr.AuthorID {
+			continue
+		}
+		if teamUser.ID == oldReviewerID {
+			continue
+		}
+		if _, exists := currentReviewers[teamUser.ID]; exists {
 			continue
 		}
 
-		suitableReviewers = append(suitableReviewers, teamUser)
+		suitableReviewers = append(suitableReviewers, *user)
 	}
+
 	if len(suitableReviewers) == 0 {
 		return nil, uuid.Nil, ErrPRNoSuitableCandidates
 	}
 
-	pr.Reviewers = suitableReviewers
-	newReviewerID := chooseReviewersRandomly(suitableReviewers, 1)[0].ID
+	newReviewer := chooseReviewersRandomly(suitableReviewers, 1)[0]
 
-	err = s.pullRequestRepository.UpdatePullRequestReviewer(ctx, pr.ID, oldReviewerID, newReviewerID)
+	err = s.pullRequestRepository.UpdatePullRequestReviewer(ctx, pr.ID, oldReviewerID, newReviewer.ID)
 	if err != nil {
 		return nil, uuid.Nil, fmt.Errorf("pull request repository: update pull request reviewer: %w", err)
 	}
 
-	return pr, newReviewerID, nil
+	return pr, newReviewer.ID, nil
 }
 
 func (s *Service) MergePullRequest(ctx context.Context, pullRequestID uuid.UUID) (*domain.PullRequest, error) {
