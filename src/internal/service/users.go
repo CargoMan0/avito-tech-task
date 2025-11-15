@@ -38,6 +38,14 @@ func (s *Service) SetUserIsActive(ctx context.Context, isActive bool, userID uui
 }
 
 func (s *Service) GetUserReviews(ctx context.Context, userID uuid.UUID) ([]domain.PullRequest, error) {
+	exists, err := s.userRepository.UserExists(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("user repository: user exists: %w", err)
+	}
+	if !exists {
+		return nil, ErrNotFound
+	}
+
 	prs, err := s.pullRequestRepository.GetPullRequestsByReviewerID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("pull request repository: get pull requests: %w", err)

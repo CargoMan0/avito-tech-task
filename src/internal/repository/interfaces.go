@@ -16,6 +16,7 @@ type TeamRepository interface {
 
 type UserRepository interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
+	UserExists(ctx context.Context, id uuid.UUID) (bool, error)
 	UpdateUserIsActive(ctx context.Context, isActive bool, userID uuid.UUID) error
 }
 

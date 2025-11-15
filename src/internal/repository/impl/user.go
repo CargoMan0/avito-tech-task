@@ -43,6 +43,18 @@ func (u *UserRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*domain
 	return user, nil
 }
 
+func (u *UserRepository) UserExists(ctx context.Context, id uuid.UUID) (bool, error) {
+	const query = `SELECT EXISTS (SELECT FROM users WHERE id = $1);`
+
+	var exists bool
+	err := u.db.QueryRowContext(ctx, query, id).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("exec check if user exists query: %w", err)
+	}
+
+	return exists, nil
+}
+
 func (u *UserRepository) UpdateUserIsActive(ctx context.Context, isActive bool, userID uuid.UUID) error {
 	const query = `UPDATE users SET is_active = $1 WHERE id = $2`
 
