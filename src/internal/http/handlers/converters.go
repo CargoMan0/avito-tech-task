@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/CargoMan0/avito-tech-task/internal/domain"
 	"github.com/google/uuid"
+	"time"
 )
 
 func teamDTOToDomain(teamDTO teamDTO) (*domain.Team, error) {
@@ -38,13 +39,26 @@ func teamMemberDTOToDomain(dto teamMemberDTO) (domain.User, error) {
 	return user, nil
 }
 
-func pullRequestFromDomain(pullRequest domain.PullRequest) pullRequestDTO {
-	return pullRequestDTO{
+func pullRequestFromDomain(pullRequest *domain.PullRequest, mergedAt *time.Time) pullRequestDTO {
+	pr := pullRequestDTO{
 		PullRequestID:   pullRequest.ID.String(),
-		AuthorID:        pullRequest.AuthorID.String(),
 		PullRequestName: pullRequest.Name,
 		Status:          convertPRStatusFromDomain(pullRequest.Status),
+		AuthorID:        pullRequest.AuthorID.String(),
 	}
+
+	if mergedAt != nil {
+		formatted := mergedAt.UTC().Format(time.RFC3339)
+		pr.MergedAt = &formatted
+	}
+
+	reviewers := make([]string, 0, len(pullRequest.Reviewers))
+	for _, reviewer := range pullRequest.Reviewers {
+		reviewers = append(reviewers, reviewer.ID.String())
+	}
+	pr.AssignedReviewers = reviewers
+
+	return pr
 }
 
 func tryConvertStatusToDomain(status string) (domain.PullRequestStatus, error) {

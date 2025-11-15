@@ -21,13 +21,13 @@ func PostUsersSetIsActive(svc *service.Service) http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, ErrCodeBadRequest, "invalid json body")
+			writeJSONError(w, http.StatusBadRequest, "invalid json body")
 			return
 		}
 
 		userID, err := uuid.Parse(req.UserID)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, ErrCodeBadRequest, "invalid user_id")
+			writeJSONError(w, http.StatusBadRequest, "invalid user_id")
 			return
 		}
 
@@ -70,7 +70,7 @@ func GetUsersReview(svc *service.Service) http.HandlerFunc {
 
 		userID, err := uuid.Parse(userIDStr)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, ErrCodeBadRequest, "invalid user_id")
+			writeJSONError(w, http.StatusBadRequest, "invalid user_id")
 			return
 		}
 
@@ -86,7 +86,7 @@ func GetUsersReview(svc *service.Service) http.HandlerFunc {
 			PullRequests: make([]pullRequestDTO, 0, len(prs)),
 		}
 		for _, pr := range prs {
-			resp.PullRequests = append(resp.PullRequests, pullRequestFromDomain(pr))
+			resp.PullRequests = append(resp.PullRequests, pullRequestFromDomain(&pr, nil))
 		}
 
 		w.Header().Set("Content-Type", "application/json")

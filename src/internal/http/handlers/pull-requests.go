@@ -1,57 +1,159 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
-	serviceDTO "github.com/CargoMan0/avito-tech-task/src/internal/service/dto"
+	"github.com/CargoMan0/avito-tech-task/internal/service"
+	"github.com/CargoMan0/avito-tech-task/internal/service/dto"
+	"github.com/google/uuid"
 	"net/http"
 )
 
-type Service interface {
-	GetTeam(ctx context.Context, name string) (*serviceDTO.TeamData, error)
-	CreateTeam(ctx context.Context, data *serviceDTO.TeamData) error
-}
-
-func CreateTeam(service Service) http.HandlerFunc {
+func PostPullRequest(service *service.Service) http.HandlerFunc {
+	type response struct {
+		Pr pullRequestDTO `json:"pr"`
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req teamDTO
+		var req postPullRequestCreateDTO
 
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			http.Error(w, "bad request", http.StatusBadRequest)
+			writeJSONError(w, http.StatusBadRequest, "invalid json body")
+		}
+
+		pullRequestID, err := uuid.Parse(req.PullRequestID)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_id")
+			return
+		}
+		authorID, err := uuid.Parse(req.AuthorID)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_author_id")
+			return
+		}
+		if len(req.PullRequestName) == 0 || len(req.PullRequestName) > 20 {
+			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_name")
 			return
 		}
 
-		err = validateTeamDTO(req)
+		ctx := r.Context()
+		data := &dto.CreatePullRequestData{
+			PullRequestID:   pullRequestID,
+			PullRequestName: req.PullRequestName,
+			AuthorID:        authorID,
+		}
+
+		pr, err := service.CreatePullRequest(ctx, data)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			handleDomainError(w, err)
 			return
 		}
 
-		data, err := mapTeamDTOToService(req)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+		reviewers := make([]string, 0, len(pr.Reviewers))
+		for _, reviewer := range pr.Reviewers {
+			reviewers = append(reviewers, reviewer.ID.String())
 		}
 
-		err = service.CreateTeam(r.Context(), &data)
-		if err != nil {
-			handleError(w, err)
-			return
+		resp := response{
+			Pr: pullRequestFromDomain(pr, nil),
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-
-		err = json.NewEncoder(w).Encode(req)
+		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
 		}
 	}
 }
 
-func GetTeam(service Service) http.HandlerFunc {
+func PostPullRequestMerge(service *service.Service) http.HandlerFunc {
+	type request struct {
+		PullRequestID string `json:"pull_request_id"`
+	}
+	type response struct {
+		Pr pullRequestDTO `json:"pr"`
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
+		var req request
 
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid json body")
+			return
+		}
+
+		prID, err := uuid.Parse(req.PullRequestID)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_id")
+			return
+		}
+
+		pr, mergedAt, err := service.MergePullRequest(r.Context(), prID)
+		if err != nil {
+			handleDomainError(w, err)
+			return
+		}
+
+		resp := response{
+			Pr: pullRequestFromDomain(pr, mergedAt),
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(resp)
+		if err != nil {
+			return
+		}
+
+		return
+	}
+}
+
+func PostPullRequestReassign(service *service.Service) http.HandlerFunc {
+	type request struct {
+		PullRequestId string `json:"pull_request_id"`
+		OldReviewerId string `json:"old_reviewer_id"`
+	}
+	type response struct {
+		Pr         pullRequestDTO `json:"pr"`
+		ReplacedBy string         `json:"replaced_by"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req request
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid json body")
+			return
+		}
+
+		prID, err := uuid.Parse(req.PullRequestId)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_id")
+			return
+		}
+		oldReviewerID, err := uuid.Parse(req.OldReviewerId)
+		if err != nil {
+			writeJSONError(w, http.StatusBadRequest, "invalid old_reviewer_id")
+			return
+		}
+
+		ctx := r.Context()
+		pr, newReviewerID, err := service.ReassignPullRequestReviewer(ctx, prID, oldReviewerID)
+		if err != nil {
+			handleDomainError(w, err)
+			return
+		}
+
+		resp := response{
+			Pr:         pullRequestFromDomain(pr, nil),
+			ReplacedBy: newReviewerID.String(),
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(resp)
+		if err != nil {
+			return
+		}
+
+		return
 	}
 }

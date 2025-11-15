@@ -12,19 +12,19 @@ func PostTeam(service *service.Service) http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, ErrCodeBadRequest, "invalid json body")
+			writeJSONError(w, http.StatusBadRequest, "invalid json body")
 			return
 		}
 
 		err = validateTeamDTO(req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, ErrCodeBadRequest, err.Error())
+			writeJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		team, err := teamDTOToDomain(req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, ErrCodeBadRequest, err.Error())
+			writeJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -50,7 +50,7 @@ func GetTeam(service *service.Service) http.HandlerFunc {
 		teamName := r.URL.Query().Get("team_name")
 
 		if len(teamName) == 0 || len(teamName) >= 20 {
-			writeJSONError(w, http.StatusBadRequest, ErrCodeBadRequest, "invalid team_name")
+			writeJSONError(w, http.StatusBadRequest, "invalid team_name")
 			return
 		}
 
