@@ -35,12 +35,6 @@ type userDTO struct {
 	TeamName string `json:"team_name"`
 	IsActive bool   `json:"is_active"`
 }
-
-type errorResponse struct {
-	Error   string `json:"error"`
-	Message string `json:"message"`
-}
-
 type pullRequestShortDTO struct {
 	PullRequestID   string `json:"pull_request_id"`
 	PullRequestName string `json:"pull_request_name"`
