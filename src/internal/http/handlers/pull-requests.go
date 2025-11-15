@@ -54,7 +54,7 @@ func PostPullRequest(service *service.Service) http.HandlerFunc {
 		}
 
 		resp := response{
-			Pr: pullRequestFromDomain(pr, nil),
+			Pr: pullRequestFromDomain(pr),
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -87,14 +87,14 @@ func PostPullRequestMerge(service *service.Service) http.HandlerFunc {
 			return
 		}
 
-		pr, mergedAt, err := service.MergePullRequest(r.Context(), prID)
+		pr, err := service.MergePullRequest(r.Context(), prID)
 		if err != nil {
 			handleDomainError(w, err)
 			return
 		}
 
 		resp := response{
-			Pr: pullRequestFromDomain(pr, mergedAt),
+			Pr: pullRequestFromDomain(pr),
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -144,7 +144,7 @@ func PostPullRequestReassign(service *service.Service) http.HandlerFunc {
 		}
 
 		resp := response{
-			Pr:         pullRequestFromDomain(pr, nil),
+			Pr:         pullRequestFromDomain(pr),
 			ReplacedBy: newReviewerID.String(),
 		}
 

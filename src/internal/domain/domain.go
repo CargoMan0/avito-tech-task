@@ -1,6 +1,9 @@
 package domain
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type Team struct {
 	Name  string // Unique
@@ -21,6 +24,7 @@ type PullRequest struct {
 	Status            PullRequestStatus
 	Reviewers         []User
 	NeedMoreReviewers bool
+	MergedAt          *time.Time
 }
 
 const MaxReviewers = 2

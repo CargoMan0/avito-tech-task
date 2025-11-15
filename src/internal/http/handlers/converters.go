@@ -39,7 +39,7 @@ func teamMemberDTOToDomain(dto teamMemberDTO) (domain.User, error) {
 	return user, nil
 }
 
-func pullRequestFromDomain(pullRequest *domain.PullRequest, mergedAt *time.Time) pullRequestDTO {
+func pullRequestFromDomain(pullRequest *domain.PullRequest) pullRequestDTO {
 	pr := pullRequestDTO{
 		PullRequestID:   pullRequest.ID.String(),
 		PullRequestName: pullRequest.Name,
@@ -47,8 +47,8 @@ func pullRequestFromDomain(pullRequest *domain.PullRequest, mergedAt *time.Time)
 		AuthorID:        pullRequest.AuthorID.String(),
 	}
 
-	if mergedAt != nil {
-		formatted := mergedAt.UTC().Format(time.RFC3339)
+	if pullRequest.MergedAt != nil {
+		formatted := pullRequest.MergedAt.UTC().Format(time.RFC3339)
 		pr.MergedAt = &formatted
 	}
 

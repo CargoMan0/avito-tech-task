@@ -9,6 +9,7 @@ import (
 	"github.com/CargoMan0/avito-tech-task/internal/repository"
 	"github.com/google/uuid"
 	"strings"
+	"time"
 )
 
 type PullRequestRepository struct {
@@ -88,19 +89,24 @@ func (p *PullRequestRepository) CreatePullRequest(ctx context.Context, pr *domai
 }
 
 func (p *PullRequestRepository) GetPullRequestByID(ctx context.Context, pullRequestID uuid.UUID) (*domain.PullRequest, error) {
-	const query = `SELECT name, author_id, status, need_more_reviewers FROM pull_requests WHERE id = $1`
+	const query = `SELECT name, author_id, status, need_more_reviewers, merged_at FROM pull_requests WHERE id = $1`
 
 	pr := domain.PullRequest{
 		ID: pullRequestID,
 	}
 
-	err := p.db.QueryRowContext(ctx, query, pullRequestID).Scan(&pr.Name, &pr.AuthorID, &pr.Status, &pr.NeedMoreReviewers)
+	nullTimeScanner := sql.NullTime{}
+	err := p.db.QueryRowContext(ctx, query, pullRequestID).Scan(&pr.Name, &pr.AuthorID, &pr.Status, &pr.NeedMoreReviewers, &nullTimeScanner)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, repository.ErrRepoNotFound
 		}
 
 		return nil, fmt.Errorf("run get pull request by id sql query: %w", err)
+	}
+
+	if nullTimeScanner.Valid {
+		pr.MergedAt = &nullTimeScanner.Time
 	}
 
 	return &pr, nil
@@ -132,27 +138,31 @@ func (p *PullRequestRepository) GetPullRequestsByReviewerID(ctx context.Context,
 	return res, nil
 }
 
-func (p *PullRequestRepository) UpdatePullRequestStatus(ctx context.Context, status domain.PullRequestStatus, pullRequestID uuid.UUID) error {
-	const query = `UPDATE pull_requests SET status = $1 WHERE id = $2`
+func (p *PullRequestRepository) UpdatePullRequestStatusAndMergedAt(ctx context.Context, status domain.PullRequestStatus, pullRequestID uuid.UUID, mergedAt time.Time) error {
+	const query = `UPDATE pull_requests SET status = $1, merged_at = $2 WHERE id = $3`
 
 	statusSQL := statusFromDomainToEnum(status)
 
-	_, err := p.db.ExecContext(ctx, query, statusSQL, pullRequestID)
+	res, err := p.db.ExecContext(ctx, query, statusSQL, mergedAt, pullRequestID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return repository.ErrRepoNotFound
-		}
-
 		return fmt.Errorf("exec update pull request status query: %w", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("get affected rows: %w", err)
+	}
+	if rowsAffected == 0 {
+		return repository.ErrRepoNotFound
 	}
 
 	return nil
 }
 
-func (p *PullRequestRepository) UpdatePullRequestReviewer(ctx context.Context, pullRequestID uuid.UUID, reviewerID uuid.UUID) error {
-	const query = `UPDATE pull_requests_to_reviewers SET user_id = $1 WHERE pull_request_id= $2`
+func (p *PullRequestRepository) UpdatePullRequestReviewer(ctx context.Context, pullRequestID, oldReviewerID, newReviewerID uuid.UUID) error {
+	const query = `UPDATE pull_requests_to_reviewers SET user_id = $1 WHERE user_id = $2 AND pull_request_id = $3`
 
-	res, err := p.db.ExecContext(ctx, query, pullRequestID, reviewerID)
+	res, err := p.db.ExecContext(ctx, query, pullRequestID, newReviewerID, oldReviewerID, pullRequestID)
 	if err != nil {
 		return fmt.Errorf("exec update pull request reviewer sql query: %w", err)
 	}

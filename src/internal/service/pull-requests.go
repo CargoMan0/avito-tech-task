@@ -76,33 +76,58 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 		return nil, uuid.Nil, ErrUserNotAssignedToPR
 	}
 
-	chooseReviewers(pr.Reviewers, pr.AuthorID, domain.MaxReviewers)
+	user, err := s.userRepository.GetUserByID(ctx, pr.AuthorID)
+	if err != nil {
+		if errors.Is(err, repository.ErrRepoNotFound) {
+			return nil, uuid.Nil, ErrNotFound
+		}
 
-	err = s.pullRequestRepository.UpdatePullRequestReviewer(ctx, pr.ID, oldReviewerID)
+		return nil, uuid.Nil, fmt.Errorf("user repository: get user by id: %w", err)
+	}
+
+	team, err := s.teamRepository.GetTeam(ctx, user.TeamName)
+	if err != nil {
+		if errors.Is(err, repository.ErrRepoNotFound) {
+			return nil, uuid.Nil, ErrNotFound
+		}
+
+		return nil, uuid.Nil, fmt.Errorf("team repository: get team: %w", err)
+	}
+
+	reviewers := chooseReviewers(team.Users, oldReviewerID, 1)
+
+	newReviewerID := reviewers[0].ID
+	err = s.pullRequestRepository.UpdatePullRequestReviewer(ctx, pr.ID, oldReviewerID, newReviewerID)
 	if err != nil {
 		return nil, uuid.Nil, fmt.Errorf("pull request repository: update pull request reviewer: %w", err)
 	}
 
-	return pr, nil
+	return pr, newReviewerID, nil
 }
 
-func (s *Service) MergePullRequest(ctx context.Context, pullRequestID uuid.UUID) (*domain.PullRequest, *time.Time, error) {
-	err := s.pullRequestRepository.UpdatePullRequestStatus(ctx, domain.PullRequestStatusMerged, pullRequestID)
-	if err != nil {
-		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, nil, ErrNotFound
-		}
-		return nil, nil, fmt.Errorf("pull request repository: update pull request status: %w", err)
-	}
-
+func (s *Service) MergePullRequest(ctx context.Context, pullRequestID uuid.UUID) (*domain.PullRequest, error) {
 	pr, err := s.pullRequestRepository.GetPullRequestByID(ctx, pullRequestID)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, nil, ErrNotFound
+			return nil, ErrNotFound
 		}
-		return nil, nil, fmt.Errorf("pull request repository: get pull request by id: %w", err)
+		return nil, fmt.Errorf("pull request repository: get pull request by id: %w", err)
+	}
+
+	if pr.Status == domain.PullRequestStatusMerged {
+		return pr, nil
 	}
 
 	mergedAt := time.Now()
-	return pr, &mergedAt, nil
+	pr.MergedAt = &mergedAt
+
+	err = s.pullRequestRepository.UpdatePullRequestStatusAndMergedAt(ctx, domain.PullRequestStatusMerged, pullRequestID, mergedAt)
+	if err != nil {
+		if errors.Is(err, repository.ErrRepoNotFound) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("pull request repository: update pull request status: %w", err)
+	}
+
+	return pr, nil
 }
