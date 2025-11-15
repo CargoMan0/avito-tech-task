@@ -1,24 +1,36 @@
-package entity
+package domain
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type Team struct {
 	Name  string // Unique
-	Users []User
+	Users []User // Team members
 }
+
 type User struct {
 	ID       uuid.UUID // Unique, immutable
+	TeamName string
 	Name     string
 	IsActive bool
 }
 
 type PullRequest struct {
 	ID                uuid.UUID // Unique, immutable
-	AuthorID          uuid.UUID
+	AuthorID          uuid.UUID // Immutable
 	Name              string
 	Status            PullRequestStatus
 	Reviewers         []User
 	NeedMoreReviewers bool
+	MergedAt          *time.Time
+}
+
+const MaxReviewers = 2
+
+func (pr *PullRequest) CheckIfNeedMoreReviewers() bool {
+	return len(pr.Reviewers) < MaxReviewers
 }
 
 type PullRequestStatus uint8
