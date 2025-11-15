@@ -52,13 +52,22 @@ func pullRequestFromDomain(pullRequest *domain.PullRequest, mergedAt *time.Time)
 		pr.MergedAt = &formatted
 	}
 
-	reviewers := make([]string, 0, len(pullRequest.Reviewers))
-	for _, reviewer := range pullRequest.Reviewers {
-		reviewers = append(reviewers, reviewer.ID.String())
+	reviewers := make([]string, len(pullRequest.Reviewers))
+	for i, reviewer := range pullRequest.Reviewers {
+		reviewers[i] = reviewer.ID.String()
 	}
 	pr.AssignedReviewers = reviewers
 
 	return pr
+}
+
+func pullRequestShortFromDomain(pullRequest *domain.PullRequest) pullRequestShortDTO {
+	return pullRequestShortDTO{
+		PullRequestID:   pullRequest.ID.String(),
+		PullRequestName: pullRequest.Name,
+		Status:          convertPRStatusFromDomain(pullRequest.Status),
+		AuthorID:        pullRequest.AuthorID.String(),
+	}
 }
 
 func tryConvertStatusToDomain(status string) (domain.PullRequestStatus, error) {

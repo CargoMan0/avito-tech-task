@@ -61,8 +61,8 @@ func PostUsersSetIsActive(svc *service.Service) http.HandlerFunc {
 
 func GetUsersReview(svc *service.Service) http.HandlerFunc {
 	type response struct {
-		UserID       string           `json:"user_id"`
-		PullRequests []pullRequestDTO `json:"pull_requests"`
+		UserID       string                `json:"user_id"`
+		PullRequests []pullRequestShortDTO `json:"pull_requests"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -83,10 +83,10 @@ func GetUsersReview(svc *service.Service) http.HandlerFunc {
 
 		resp := response{
 			UserID:       userID.String(),
-			PullRequests: make([]pullRequestDTO, 0, len(prs)),
+			PullRequests: make([]pullRequestShortDTO, 0, len(prs)),
 		}
 		for _, pr := range prs {
-			resp.PullRequests = append(resp.PullRequests, pullRequestFromDomain(&pr, nil))
+			resp.PullRequests = append(resp.PullRequests, pullRequestShortFromDomain(&pr))
 		}
 
 		w.Header().Set("Content-Type", "application/json")
