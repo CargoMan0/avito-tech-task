@@ -17,11 +17,11 @@ func statusFromDomainToEnum(s domain.PullRequestStatus) string {
 	}
 }
 
-type PRStatusScanner struct {
+type prStatusScanner struct {
 	Status domain.PullRequestStatus
 }
 
-func (p *PRStatusScanner) Scan(src any) error {
+func (p *prStatusScanner) Scan(src any) error {
 	if src == nil {
 		return errors.New("src is nil")
 	}
@@ -36,7 +36,7 @@ func (p *PRStatusScanner) Scan(src any) error {
 	}
 }
 
-func (p *PRStatusScanner) scanString(v string) error {
+func (p *prStatusScanner) scanString(v string) error {
 	switch v {
 	case "OPEN":
 		p.Status = domain.PullRequestStatusOpen

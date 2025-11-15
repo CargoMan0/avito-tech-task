@@ -107,7 +107,7 @@ func (p *PullRequestRepository) GetPullRequestByID(ctx context.Context, pullRequ
 	}
 
 	nullTimeScanner := sql.NullTime{}
-	sc := PRStatusScanner{}
+	sc := prStatusScanner{}
 	err := p.db.QueryRowContext(ctx, getPRQuery, pullRequestID).Scan(&pr.Name, &pr.AuthorID, &sc, &pr.NeedMoreReviewers, &nullTimeScanner)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -164,7 +164,7 @@ func (p *PullRequestRepository) GetPullRequestsByReviewerID(ctx context.Context,
 	for rows.Next() {
 		pr := domain.PullRequest{}
 		nullTimeScanner := sql.NullTime{}
-		sc := PRStatusScanner{}
+		sc := prStatusScanner{}
 
 		err = rows.Scan(&pr.ID, &pr.Name, &sc, &pr.NeedMoreReviewers, &pr.AuthorID, &nullTimeScanner)
 		if err != nil {
