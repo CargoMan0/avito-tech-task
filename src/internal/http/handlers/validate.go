@@ -9,6 +9,10 @@ func validateTeamDTO(dto teamDTO) error {
 		return errors.New("invalid team name")
 	}
 
+	if len(dto.Members) == 0 {
+		return errors.New("team must have at least one member")
+	}
+
 	for _, member := range dto.Members {
 		if len(member.Username) == 0 || len(member.Username) >= 20 {
 			return errors.New("invalid username")

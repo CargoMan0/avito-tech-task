@@ -23,8 +23,24 @@ var (
 		Reviewers:         testReviewersArray,
 	}
 
+	testTeam = &domain.Team{
+		Name:  "test-team",
+		Users: testReviewersArray,
+	}
+
 	testReviewersArray = []domain.User{
-		{},
+		{
+			ID:       uuid.MustParse("7fc69137-3b84-4620-8847-1d7cc6b710bd"),
+			TeamName: "test-team",
+			Name:     "test-pr-1",
+			IsActive: true,
+		},
+		{
+			ID:       uuid.MustParse("7fc69137-3b84-4620-8847-1d7cc6b711bd"),
+			TeamName: "test-team",
+			Name:     "test-pr-1",
+			IsActive: true,
+		},
 	}
 )
 
@@ -32,6 +48,7 @@ type pullRequestsRepositoryTestSuite struct {
 	suite.Suite
 	repo *PullRequestRepository
 
+	teamFixture         *repofixtures.TeamFixture
 	pullRequestsFixture *repofixtures.PullRequestFixture
 	testDB              *repofixtures.TestDB
 }
@@ -53,6 +70,7 @@ func (p *pullRequestsRepositoryTestSuite) SetupSuite() {
 	sqlDB := testDB.GetSQLDB()
 	p.repo = NewPullRequestRepository(sqlDB)
 	p.pullRequestsFixture = repofixtures.NewPullRequestFixture(sqlDB)
+	p.teamFixture = repofixtures.NewTeamFixture(sqlDB)
 }
 
 // TearDownTest function calls after each separate test and clears data
@@ -61,6 +79,7 @@ func (p *pullRequestsRepositoryTestSuite) SetupSuite() {
 func (p *pullRequestsRepositoryTestSuite) TearDownTest() {
 	// Clearing test data from the previous test.
 	p.pullRequestsFixture.MustClearTestData()
+	p.teamFixture.MustClearTestData()
 }
 
 // TearDownSuite function calls only one time after testing flow.
@@ -76,6 +95,11 @@ func (p *pullRequestsRepositoryTestSuite) TearDownSuite() {
 
 func (p *pullRequestsRepositoryTestSuite) TestPullRequestRepository_PullRequestExists() {
 	ctx := context.Background()
+
+	// Prepare team
+	p.teamFixture.MustPrepareTestTeam(ctx, testTeam)
+
+	// Prepare PR
 	p.pullRequestsFixture.MustPrepareTestPullRequest(testPR)
 
 	// Check if exists for existing payment, should result no error and true.

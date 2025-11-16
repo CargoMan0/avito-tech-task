@@ -31,7 +31,7 @@ func (t *TeamRepository) CreateTeam(ctx context.Context, data *domain.Team) (err
 	defer func() {
 		if err != nil {
 			rollbackErr := tx.Rollback()
-			if rollbackErr != nil {
+			if rollbackErr != nil && !errors.Is(err, sql.ErrTxDone) {
 				err = errors.Join(err, fmt.Errorf("rollback tx: %w", rollbackErr))
 			}
 		}
