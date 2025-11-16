@@ -33,8 +33,8 @@ func (p *PullRequestFixture) MustPrepareTestPullRequest(pr *domain.PullRequest) 
 
 	defer func() {
 		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
-				panic(fmt.Sprintf("rollback failed: %v, original err: %v", rbErr, err))
+			if rollbackErr := tx.Rollback(); rollbackErr != nil && !errors.Is(rollbackErr, sql.ErrTxDone) {
+				panic(fmt.Sprintf("rollback: %v", rollbackErr))
 			}
 		}
 	}()

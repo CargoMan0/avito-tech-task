@@ -79,6 +79,7 @@ func (p *pullRequestsRepositoryTestSuite) SetupSuite() {
 func (p *pullRequestsRepositoryTestSuite) TearDownTest() {
 	// Clearing test data from the previous test.
 	p.pullRequestsFixture.MustClearTestData()
+	p.teamFixture.MustClearTestData()
 }
 
 // TearDownSuite function calls only one time after testing flow.

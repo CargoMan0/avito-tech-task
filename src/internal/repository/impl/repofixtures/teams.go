@@ -29,7 +29,7 @@ func (t *TeamFixture) MustPrepareTestTeam(ctx context.Context, team *domain.Team
 		if err != nil {
 			rollbackErr := tx.Rollback()
 			if rollbackErr != nil && !errors.Is(err, sql.ErrTxDone) {
-				err = errors.Join(err, fmt.Errorf("rollback tx: %w", rollbackErr))
+				panic(fmt.Sprintf("rollback: %v", rollbackErr))
 			}
 		}
 	}()
@@ -66,5 +66,17 @@ func (t *TeamFixture) MustPrepareTestTeam(ctx context.Context, team *domain.Team
 	err = tx.Commit()
 	if err != nil {
 		panic(fmt.Sprintf("commit tx: %w", err))
+	}
+}
+
+func (t *TeamFixture) MustClearTestData() {
+	const query = `
+DELETE FROM users;
+DELETE FROM teams;
+`
+
+	_, err := t.db.Exec(query)
+	if err != nil {
+		panic(fmt.Sprintf("failed to clear pull request test data: %v", err))
 	}
 }
