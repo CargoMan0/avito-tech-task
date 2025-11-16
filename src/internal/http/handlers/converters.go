@@ -48,8 +48,7 @@ func pullRequestFromDomain(pullRequest *domain.PullRequest) pullRequestDTO {
 	}
 
 	if pullRequest.MergedAt != nil {
-		formatted := pullRequest.MergedAt.UTC().Format(time.RFC3339)
-		pr.MergedAt = &formatted
+		pr.MergedAt = pullRequest.MergedAt.UTC().Format(time.RFC3339)
 	}
 
 	reviewers := make([]string, len(pullRequest.Reviewers))

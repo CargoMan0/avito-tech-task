@@ -40,7 +40,7 @@ func (h *Handlers) PostUsersSetIsActive() http.HandlerFunc {
 
 		resp := response{
 			User: userDTO{
-				UserId:   user.UserID.String(),
+				UserID:   user.UserID.String(),
 				Username: user.Username,
 				IsActive: req.IsActive,
 				TeamName: user.TeamName,
