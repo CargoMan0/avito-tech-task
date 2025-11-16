@@ -11,6 +11,7 @@ type Config struct {
 	Database   Database   `envPrefix:"DATABASE_"`
 	Logger     Logger     `envPrefix:"LOGGER_"`
 	Migrations Migrations `envPrefix:"MIGRATIONS_"`
+	Auth       Auth       `envPrefix:"AUTH_"`
 }
 
 type HTTPServer struct {
@@ -35,6 +36,10 @@ type Logger struct {
 type Migrations struct {
 	Dir     string `env:"DIR,notEmpty"`
 	Enabled bool   `env:"ENABLED" envDefault:"false"`
+}
+
+type Auth struct {
+	Secret string `env:"SECRET,notEmpty"`
 }
 
 func loadConfigFromEnv() (Config, error) {

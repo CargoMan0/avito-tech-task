@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	httperrors "github.com/CargoMan0/avito-tech-task/internal/http/errors"
 	"github.com/CargoMan0/avito-tech-task/internal/service/impl/dto"
 	"github.com/google/uuid"
 	"log/slog"
@@ -22,21 +23,21 @@ func (h *Handlers) PostPullRequest() http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid json body")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid json body")
 		}
 
 		pullRequestID, err := uuid.Parse(req.PullRequestID)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_id")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid pull_request_id")
 			return
 		}
 		authorID, err := uuid.Parse(req.AuthorID)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_author_id")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid pull_request_author_id")
 			return
 		}
 		if len(req.PullRequestName) == 0 || len(req.PullRequestName) > 20 {
-			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_name")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid pull_request_name")
 			return
 		}
 
@@ -81,13 +82,13 @@ func (h *Handlers) PostPullRequestMerge() http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid json body")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid json body")
 			return
 		}
 
 		prID, err := uuid.Parse(req.PullRequestID)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_id")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid pull_request_id")
 			return
 		}
 
@@ -127,18 +128,18 @@ func (h *Handlers) PostPullRequestReassign() http.HandlerFunc {
 		var req request
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid json body")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid json body")
 			return
 		}
 
 		prID, err := uuid.Parse(req.PullRequestId)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid pull_request_id")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid pull_request_id")
 			return
 		}
 		oldReviewerID, err := uuid.Parse(req.OldReviewerId)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid old_reviewer_id")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid old_reviewer_id")
 			return
 		}
 

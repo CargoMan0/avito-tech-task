@@ -56,13 +56,3 @@ func handleDomainError(w http.ResponseWriter, err error, logger *slog.Logger) {
 		)
 	}
 }
-
-func writeJSONError(w http.ResponseWriter, status int, errorMessage string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-
-	json.NewEncoder(w).Encode(map[string]string{
-		"error": errorMessage,
-	},
-	)
-}

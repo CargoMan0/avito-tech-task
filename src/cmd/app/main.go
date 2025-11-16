@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/CargoMan0/avito-tech-task/internal/http/handlers"
 	"github.com/CargoMan0/avito-tech-task/internal/http/handlers/routes"
+	"github.com/CargoMan0/avito-tech-task/internal/http/middleware"
 	"github.com/CargoMan0/avito-tech-task/internal/repository/impl"
 	impl2 "github.com/CargoMan0/avito-tech-task/internal/service/impl"
 	"github.com/CargoMan0/avito-tech-task/pkg/database"
@@ -92,10 +93,13 @@ func run() (err error) {
 		teamsRepo,
 	)
 
+	// Auth middleware
+	authMiddleware := middleware.AuthMiddleware(logger, cfg.Auth.Secret)
+
 	// HTTP layer
 	mux := http.NewServeMux()
 	hlrs := handlers.New(srvc, logger)
-	routes.SetupRoutes(mux, hlrs)
+	routes.SetupRoutes(mux, hlrs, authMiddleware)
 
 	srv := &http.Server{
 		Addr:    cfg.HTTPServer.ListenAddr,

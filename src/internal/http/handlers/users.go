@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	httperrors "github.com/CargoMan0/avito-tech-task/internal/http/errors"
 	"github.com/google/uuid"
 	"log/slog"
 	"net/http"
@@ -21,13 +22,13 @@ func (h *Handlers) PostUsersSetIsActive() http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid json body")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid json body")
 			return
 		}
 
 		userID, err := uuid.Parse(req.UserID)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid user_id")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid user_id")
 			return
 		}
 
@@ -72,7 +73,7 @@ func (h *Handlers) GetUsersReview() http.HandlerFunc {
 
 		userID, err := uuid.Parse(userIDStr)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid user_id")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid user_id")
 			return
 		}
 
