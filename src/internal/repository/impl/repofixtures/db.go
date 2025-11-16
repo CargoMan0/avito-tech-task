@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	migrationsDir = "/Users/bernsteinmond/ProgrammingProjects/GolandProjects/avito-tech-task/migrations"
+	migrationsDir = "./migrations" // Absolute Path
 
 	testUser     = "test"
 	testPassword = "test"
