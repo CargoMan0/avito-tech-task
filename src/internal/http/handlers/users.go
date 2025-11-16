@@ -54,8 +54,6 @@ func PostUsersSetIsActive(svc *service.Service) http.HandlerFunc {
 		if err != nil {
 			return
 		}
-
-		return
 	}
 }
 

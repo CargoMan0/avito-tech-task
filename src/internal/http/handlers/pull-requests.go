@@ -102,8 +102,6 @@ func PostPullRequestMerge(service *service.Service) http.HandlerFunc {
 		if err != nil {
 			return
 		}
-
-		return
 	}
 }
 
@@ -153,7 +151,5 @@ func PostPullRequestReassign(service *service.Service) http.HandlerFunc {
 		if err != nil {
 			return
 		}
-
-		return
 	}
 }

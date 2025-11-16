@@ -78,7 +78,5 @@ func GetTeam(service *service.Service) http.HandlerFunc {
 		if err != nil {
 			return
 		}
-
-		return
 	}
 }
