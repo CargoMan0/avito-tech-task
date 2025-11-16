@@ -31,8 +31,12 @@
    возвращаемый код 401. ТЗ составлено не полностью, исходя из этого, токены сделаны вечными. Нигде нет конкретного
    требования создавать авторизацию и эндпоинты для нее.
     1. Как проверяющим пройти авторизацию? . Тип токенов - Bearer. Токены подписаны секретной фразой из .env.example
-        - Как админ: ``Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4ifQ.H8m41meCDWkRYIcOIjy0s2yN6ZNuprR-Fs5IO1z1Nl8`` *или сгенерируйте самостоятельно.
-        - Как пользователь: ``Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoidXNlciJ9.d8mUijDTy0HD5_XzE6s-pNxHmfun96QTa94TMZifvx0`` *или сгенерируйте самостоятельно.
+        - Как админ:
+          ``Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4ifQ.H8m41meCDWkRYIcOIjy0s2yN6ZNuprR-Fs5IO1z1Nl8`` *
+          или сгенерируйте самостоятельно.
+        - Как пользователь:
+          ``Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoidXNlciJ9.d8mUijDTy0HD5_XzE6s-pNxHmfun96QTa94TMZifvx0`` *
+          или сгенерируйте самостоятельно.
 
 ### Какие дополнительные задания я выполнил?
 
@@ -95,3 +99,5 @@
 
 1. Названия ресурсов (pullRequest,team) - почему-то не во множественном числе, в отличии от остальных мест. Я бы делал
    ресурсы во множественном числе
+2. Пожалуйста, пишите больше информации про авторизацию. Все эндпоинты должны возвращать ошибку 401 в случае провала
+   авторизации. В этом месте не очень хорошо сделано ТЗ и в частности OpenAPI.
