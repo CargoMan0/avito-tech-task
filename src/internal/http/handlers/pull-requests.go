@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/CargoMan0/avito-tech-task/internal/service/dto"
+	"github.com/CargoMan0/avito-tech-task/internal/service/impl/dto"
 	"github.com/google/uuid"
 	"log/slog"
 	"net/http"

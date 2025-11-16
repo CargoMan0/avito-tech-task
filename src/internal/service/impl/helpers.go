@@ -1,4 +1,4 @@
-package service
+package impl
 
 import (
 	"github.com/CargoMan0/avito-tech-task/internal/domain"

@@ -8,7 +8,7 @@ import (
 	"github.com/CargoMan0/avito-tech-task/internal/http/handlers"
 	"github.com/CargoMan0/avito-tech-task/internal/http/handlers/routes"
 	"github.com/CargoMan0/avito-tech-task/internal/repository/impl"
-	"github.com/CargoMan0/avito-tech-task/internal/service"
+	impl2 "github.com/CargoMan0/avito-tech-task/internal/service/impl"
 	"github.com/CargoMan0/avito-tech-task/pkg/database"
 	"github.com/CargoMan0/avito-tech-task/pkg/migrations"
 	"log/slog"
@@ -86,7 +86,7 @@ func run() (err error) {
 	teamsRepo := impl.NewTeamRepository(sqlDB)
 
 	// Service layer
-	srvc := service.NewService(
+	srvc := impl2.NewService(
 		pullRequestsRepo,
 		usersRepo,
 		teamsRepo,
