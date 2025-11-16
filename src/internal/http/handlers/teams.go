@@ -2,11 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/CargoMan0/avito-tech-task/internal/service"
 	"net/http"
 )
 
-func PostTeam(service *service.Service) http.HandlerFunc {
+func (h *Handlers) PostTeam() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req teamDTO
 
@@ -29,9 +28,9 @@ func PostTeam(service *service.Service) http.HandlerFunc {
 		}
 
 		ctx := r.Context()
-		err = service.CreateTeam(ctx, team)
+		err = h.service.CreateTeam(ctx, team)
 		if err != nil {
-			handleDomainError(w, err)
+			handleDomainError(w, err, h.logger)
 			return
 		}
 
@@ -45,7 +44,7 @@ func PostTeam(service *service.Service) http.HandlerFunc {
 	}
 }
 
-func GetTeam(service *service.Service) http.HandlerFunc {
+func (h *Handlers) GetTeam() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		teamName := r.URL.Query().Get("team_name")
 
@@ -55,9 +54,9 @@ func GetTeam(service *service.Service) http.HandlerFunc {
 		}
 
 		ctx := r.Context()
-		team, err := service.GetTeam(ctx, teamName)
+		team, err := h.service.GetTeam(ctx, teamName)
 		if err != nil {
-			handleDomainError(w, err)
+			handleDomainError(w, err, h.logger)
 			return
 		}
 

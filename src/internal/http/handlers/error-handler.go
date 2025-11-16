@@ -5,11 +5,11 @@ import (
 	"errors"
 	httperrors "github.com/CargoMan0/avito-tech-task/internal/http/errors"
 	"github.com/CargoMan0/avito-tech-task/internal/service"
-	"log"
+	"log/slog"
 	"net/http"
 )
 
-func handleDomainError(w http.ResponseWriter, err error) {
+func handleDomainError(w http.ResponseWriter, err error, logger *slog.Logger) {
 	w.Header().Set("Content-Type", "application/json")
 
 	switch {
@@ -51,7 +51,9 @@ func handleDomainError(w http.ResponseWriter, err error) {
 		})
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Print(err.Error())
+		logger.Error("unexpected internal error from service",
+			slog.String("error", err.Error()),
+		)
 	}
 }
 
@@ -60,6 +62,7 @@ func writeJSONError(w http.ResponseWriter, status int, errorMessage string) {
 	w.WriteHeader(status)
 
 	json.NewEncoder(w).Encode(map[string]string{
-		"error": errorMessage},
+		"error": errorMessage,
+	},
 	)
 }
