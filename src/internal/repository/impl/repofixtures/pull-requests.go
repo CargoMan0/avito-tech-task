@@ -19,8 +19,6 @@ func NewPullRequestFixture(db *sql.DB) *PullRequestFixture {
 	return &PullRequestFixture{db}
 }
 
-// MustPrepareTestPullRequest inserts test pull request to the database.
-// it panics if failed to insert payment.
 func (p *PullRequestFixture) MustPrepareTestPullRequest(pr *domain.PullRequest) {
 	const (
 		insertPRQuery          = `INSERT INTO pull_requests (id, created_at, name, author_id, status, need_more_reviewers) VALUES ($1, $2, $3, $4, $5, $6);`
@@ -67,16 +65,14 @@ func (p *PullRequestFixture) MustPrepareTestPullRequest(pr *domain.PullRequest) 
 	}
 }
 
-// MustClearTestData clears all test data from tables related to payment testing.
-// If the query execution fails, the function panics.
 func (p *PullRequestFixture) MustClearTestData() {
 	const query = `
-TRUNCATE TABLE pull_requests; 
-TRUNCATE TABLE pull_requests_to_reviewers;
+DELETE FROM pull_requests_to_reviewers;
+DELETE FROM pull_requests;
 `
 
 	_, err := p.db.Exec(query)
 	if err != nil {
-		panic(fmt.Sprintf("failed to clear test pull request data: %s", err.Error()))
+		panic(fmt.Sprintf("failed to clear pull request test data: %v", err))
 	}
 }
