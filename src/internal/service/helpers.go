@@ -7,11 +7,8 @@ import (
 )
 
 func chooseReviewersRandomly(users []domain.User, maxReviewers int) []domain.User {
-	candidates := make([]domain.User, 0, len(users))
-	for _, u := range users {
-		candidates = append(candidates, u)
-
-	}
+	candidates := make([]domain.User, len(users))
+	copy(candidates, users)
 
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	rand.Shuffle(len(candidates), func(i, j int) {

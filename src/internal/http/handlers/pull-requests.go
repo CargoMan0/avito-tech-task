@@ -47,11 +47,6 @@ func (h *Handlers) PostPullRequest() http.HandlerFunc {
 			return
 		}
 
-		reviewers := make([]string, 0, len(pr.Reviewers))
-		for _, reviewer := range pr.Reviewers {
-			reviewers = append(reviewers, reviewer.ID.String())
-		}
-
 		resp := response{
 			Pr: pullRequestFromDomain(pr),
 		}
