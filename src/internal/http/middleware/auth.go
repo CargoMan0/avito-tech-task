@@ -44,7 +44,7 @@ func AuthMiddleware(next http.Handler) http.HandlerFunc {
 }
 
 func AdminOnly(next http.Handler) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		role := r.Context().Value(CtxRoleKey)
 		if role != RoleAdmin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -55,5 +55,5 @@ func AdminOnly(next http.Handler) http.HandlerFunc {
 			return
 		}
 		next.ServeHTTP(w, r)
-	})
+	}
 }
