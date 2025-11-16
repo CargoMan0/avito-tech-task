@@ -1,4 +1,4 @@
-package service
+package impl
 
 import (
 	"context"
@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"github.com/CargoMan0/avito-tech-task/internal/domain"
 	"github.com/CargoMan0/avito-tech-task/internal/repository"
-	"github.com/CargoMan0/avito-tech-task/internal/service/dto"
+	"github.com/CargoMan0/avito-tech-task/internal/service"
+	"github.com/CargoMan0/avito-tech-task/internal/service/impl/dto"
 	"github.com/google/uuid"
 )
 
@@ -14,7 +15,7 @@ func (s *Service) SetUserIsActive(ctx context.Context, isActive bool, userID uui
 	err := s.userRepository.UpdateUserIsActive(ctx, isActive, userID)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		return nil, fmt.Errorf("user repository: update user is active: %w", err)
 	}
@@ -22,7 +23,7 @@ func (s *Service) SetUserIsActive(ctx context.Context, isActive bool, userID uui
 	user, err := s.userRepository.GetUserByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		return nil, fmt.Errorf("user repository: get user: %w", err)
 	}
@@ -43,7 +44,7 @@ func (s *Service) GetUserReviews(ctx context.Context, userID uuid.UUID) ([]domai
 		return nil, fmt.Errorf("user repository: user exists: %w", err)
 	}
 	if !exists {
-		return nil, ErrNotFound
+		return nil, service.ErrNotFound
 	}
 
 	prs, err := s.pullRequestRepository.GetPullRequestsByReviewerID(ctx, userID)

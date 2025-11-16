@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	httperrors "github.com/CargoMan0/avito-tech-task/internal/http/errors"
 	"log/slog"
 	"net/http"
 )
@@ -12,19 +13,19 @@ func (h *Handlers) PostTeam() http.HandlerFunc {
 
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, "invalid json body")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid json body")
 			return
 		}
 
 		err = validateTeamDTO(req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, err.Error())
+			httperrors.WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		team, err := teamDTOToDomain(req)
 		if err != nil {
-			writeJSONError(w, http.StatusBadRequest, err.Error())
+			httperrors.WriteJSONError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -54,7 +55,7 @@ func (h *Handlers) GetTeam() http.HandlerFunc {
 		teamName := r.URL.Query().Get("team_name")
 
 		if len(teamName) == 0 || len(teamName) >= 20 {
-			writeJSONError(w, http.StatusBadRequest, "invalid team_name")
+			httperrors.WriteJSONError(w, http.StatusBadRequest, "invalid team_name")
 			return
 		}
 

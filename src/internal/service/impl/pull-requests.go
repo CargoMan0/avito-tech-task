@@ -1,4 +1,4 @@
-package service
+package impl
 
 import (
 	"context"
@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"github.com/CargoMan0/avito-tech-task/internal/domain"
 	"github.com/CargoMan0/avito-tech-task/internal/repository"
-	"github.com/CargoMan0/avito-tech-task/internal/service/dto"
+	"github.com/CargoMan0/avito-tech-task/internal/service"
+	"github.com/CargoMan0/avito-tech-task/internal/service/impl/dto"
 	"github.com/google/uuid"
 	"time"
 )
@@ -17,7 +18,7 @@ func (s *Service) CreatePullRequest(ctx context.Context, data *dto.CreatePullReq
 		return nil, fmt.Errorf("pull request repository: check if pull request exists: %w", err)
 	}
 	if exists {
-		return nil, ErrPRAlreadyExists
+		return nil, service.ErrPRAlreadyExists
 	}
 
 	pr := &domain.PullRequest{
@@ -30,7 +31,7 @@ func (s *Service) CreatePullRequest(ctx context.Context, data *dto.CreatePullReq
 	user, err := s.userRepository.GetUserByID(ctx, pr.AuthorID)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 
 		return nil, fmt.Errorf("user repository: get user: %w", err)
@@ -65,7 +66,7 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 	pr, err := s.pullRequestRepository.GetPullRequestByID(ctx, pullRequestID)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, uuid.Nil, ErrNotFound
+			return nil, uuid.Nil, service.ErrNotFound
 		}
 		return nil, uuid.Nil, fmt.Errorf("pull request repository: get pull request: %w", err)
 	}
@@ -76,17 +77,17 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 	}
 
 	if _, ok := currentReviewers[oldReviewerID]; !ok {
-		return nil, uuid.Nil, ErrUserNotAssignedToPR
+		return nil, uuid.Nil, service.ErrUserNotAssignedToPR
 	}
 
 	if pr.Status == domain.PullRequestStatusMerged {
-		return nil, uuid.Nil, ErrPRAlreadyMerged
+		return nil, uuid.Nil, service.ErrPRAlreadyMerged
 	}
 
 	author, err := s.userRepository.GetUserByID(ctx, pr.AuthorID)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, uuid.Nil, ErrNotFound
+			return nil, uuid.Nil, service.ErrNotFound
 		}
 		return nil, uuid.Nil, fmt.Errorf("user repository: get author: %w", err)
 	}
@@ -94,7 +95,7 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 	team, err := s.teamRepository.GetTeam(ctx, author.TeamName)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, uuid.Nil, ErrNotFound
+			return nil, uuid.Nil, service.ErrNotFound
 		}
 		return nil, uuid.Nil, fmt.Errorf("team repository: get team: %w", err)
 	}
@@ -111,7 +112,7 @@ func (s *Service) ReassignPullRequestReviewer(ctx context.Context, pullRequestID
 	}
 
 	if len(suitable) == 0 {
-		return nil, uuid.Nil, ErrPRNoSuitableCandidates
+		return nil, uuid.Nil, service.ErrPRNoSuitableCandidates
 	}
 
 	newReviewer := chooseReviewersRandomly(suitable, 1)[0]
@@ -135,7 +136,7 @@ func (s *Service) MergePullRequest(ctx context.Context, pullRequestID uuid.UUID)
 	pr, err := s.pullRequestRepository.GetPullRequestByID(ctx, pullRequestID)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		return nil, fmt.Errorf("pull request repository: get pull request by id: %w", err)
 	}
@@ -151,7 +152,7 @@ func (s *Service) MergePullRequest(ctx context.Context, pullRequestID uuid.UUID)
 	err = s.pullRequestRepository.UpdatePullRequestStatusAndMergedAt(ctx, domain.PullRequestStatusMerged, pullRequestID, mergedAt)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		return nil, fmt.Errorf("pull request repository: update pull request status: %w", err)
 	}

@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"github.com/CargoMan0/avito-tech-task/internal/http/handlers"
 	"github.com/CargoMan0/avito-tech-task/internal/http/handlers/routes"
+	"github.com/CargoMan0/avito-tech-task/internal/http/middleware"
 	"github.com/CargoMan0/avito-tech-task/internal/repository/impl"
-	"github.com/CargoMan0/avito-tech-task/internal/service"
+	impl2 "github.com/CargoMan0/avito-tech-task/internal/service/impl"
 	"github.com/CargoMan0/avito-tech-task/pkg/database"
 	"github.com/CargoMan0/avito-tech-task/pkg/migrations"
 	"log/slog"
@@ -86,16 +87,19 @@ func run() (err error) {
 	teamsRepo := impl.NewTeamRepository(sqlDB)
 
 	// Service layer
-	srvc := service.NewService(
+	srvc := impl2.NewService(
 		pullRequestsRepo,
 		usersRepo,
 		teamsRepo,
 	)
 
+	// Auth middleware
+	authMiddleware := middleware.AuthMiddleware(logger, cfg.Auth.Secret)
+
 	// HTTP layer
 	mux := http.NewServeMux()
 	hlrs := handlers.New(srvc, logger)
-	routes.SetupRoutes(mux, hlrs)
+	routes.SetupRoutes(mux, hlrs, authMiddleware)
 
 	srv := &http.Server{
 		Addr:    cfg.HTTPServer.ListenAddr,

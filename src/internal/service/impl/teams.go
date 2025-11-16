@@ -1,4 +1,4 @@
-package service
+package impl
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/CargoMan0/avito-tech-task/internal/domain"
 	"github.com/CargoMan0/avito-tech-task/internal/repository"
+	"github.com/CargoMan0/avito-tech-task/internal/service"
 	"github.com/google/uuid"
 )
 
@@ -13,7 +14,7 @@ func (s *Service) CreateTeam(ctx context.Context, team *domain.Team) error {
 	seen := make(map[uuid.UUID]struct{})
 	for _, user := range team.Users {
 		if _, ok := seen[user.ID]; ok {
-			return ErrUserDuplicated
+			return service.ErrUserDuplicated
 		}
 
 		seen[user.ID] = struct{}{}
@@ -24,7 +25,7 @@ func (s *Service) CreateTeam(ctx context.Context, team *domain.Team) error {
 		return fmt.Errorf("team repository: team exists: %w", err)
 	}
 	if exists {
-		return ErrTeamAlreadyExists
+		return service.ErrTeamAlreadyExists
 	}
 
 	err = s.teamRepository.CreateTeam(ctx, team)
@@ -39,7 +40,7 @@ func (s *Service) GetTeam(ctx context.Context, name string) (*domain.Team, error
 	team, err := s.teamRepository.GetTeam(ctx, name)
 	if err != nil {
 		if errors.Is(err, repository.ErrRepoNotFound) {
-			return nil, ErrNotFound
+			return nil, service.ErrNotFound
 		}
 		return nil, fmt.Errorf("team repository: get team: %w", err)
 	}
