@@ -1,4 +1,4 @@
-package impl
+package repoconvert
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"github.com/CargoMan0/avito-tech-task/internal/domain"
 )
 
-func statusFromDomainToEnum(s domain.PullRequestStatus) string {
+func StatusFromDomainToEnum(s domain.PullRequestStatus) string {
 	switch s {
 	case domain.PullRequestStatusOpen:
 		return "OPEN"
