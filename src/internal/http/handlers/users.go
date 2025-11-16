@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/google/uuid"
+	"log/slog"
 	"net/http"
 )
 
@@ -51,10 +52,12 @@ func (h *Handlers) PostUsersSetIsActive() http.HandlerFunc {
 
 		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
+			h.logger.Error("failed to encode set user is active response",
+				slog.String("error", err.Error()),
+			)
+
 			return
 		}
-
-		return
 	}
 }
 
@@ -93,6 +96,10 @@ func (h *Handlers) GetUsersReview() http.HandlerFunc {
 
 		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
+			h.logger.Error("failed to encode get users review response",
+				slog.String("error", err.Error()),
+			)
+
 			return
 		}
 	}
