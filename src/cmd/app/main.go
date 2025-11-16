@@ -80,20 +80,20 @@ func run() (err error) {
 		logger.Info("Migrations disabled - skipping migrations")
 	}
 
-	// Repositories
+	// Repositories layer
 	pullRequestsRepo := impl.NewPullRequestRepository(sqlDB)
 	usersRepo := impl.NewUserRepository(sqlDB)
 	teamsRepo := impl.NewTeamRepository(sqlDB)
 
-	// Service
+	// Service layer
 	srvc := service.NewService(
 		pullRequestsRepo,
 		usersRepo,
 		teamsRepo,
 	)
 
+	// HTTP layer
 	mux := http.NewServeMux()
-
 	hlrs := handlers.New(srvc, logger)
 	routes.SetupRoutes(mux, hlrs)
 

@@ -17,20 +17,12 @@ type pullRequestDTO struct {
 	Status            string   `json:"status"`
 	AuthorID          string   `json:"author_id"`
 	AssignedReviewers []string `json:"assigned_reviewers"`
-	MergedAt          *string  `json:"merged_at"`
-	CreatedAt         *string  `json:"created_at"`
-}
-
-type postPullRequestCreateDTO struct {
-	PullRequestID   string  `json:"pull_request_id"`
-	PullRequestName string  `json:"pull_request_name"`
-	AuthorID        string  `json:"author_id"`
-	MergedAt        *string `json:"merged_at"`
-	CreatedAt       *string `json:"created_at"`
+	MergedAt          string   `json:"merged_at,omitempty"`
+	CreatedAt         string   `json:"created_at,omitempty"`
 }
 
 type userDTO struct {
-	UserId   string `json:"user_id"`
+	UserID   string `json:"user_id"`
 	Username string `json:"username"`
 	TeamName string `json:"team_name"`
 	IsActive bool   `json:"is_active"`
