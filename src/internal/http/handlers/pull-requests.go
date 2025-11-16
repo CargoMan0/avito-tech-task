@@ -2,13 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/CargoMan0/avito-tech-task/internal/service"
 	"github.com/CargoMan0/avito-tech-task/internal/service/dto"
 	"github.com/google/uuid"
 	"net/http"
 )
 
-func PostPullRequest(service *service.Service) http.HandlerFunc {
+func (h *Handlers) PostPullRequest() http.HandlerFunc {
 	type response struct {
 		Pr pullRequestDTO `json:"pr"`
 	}
@@ -42,9 +41,9 @@ func PostPullRequest(service *service.Service) http.HandlerFunc {
 			AuthorID:        authorID,
 		}
 
-		pr, err := service.CreatePullRequest(ctx, data)
+		pr, err := h.service.CreatePullRequest(ctx, data)
 		if err != nil {
-			handleDomainError(w, err)
+			handleDomainError(w, err, h.logger)
 			return
 		}
 
@@ -65,7 +64,7 @@ func PostPullRequest(service *service.Service) http.HandlerFunc {
 	}
 }
 
-func PostPullRequestMerge(service *service.Service) http.HandlerFunc {
+func (h *Handlers) PostPullRequestMerge() http.HandlerFunc {
 	type request struct {
 		PullRequestID string `json:"pull_request_id"`
 	}
@@ -87,9 +86,9 @@ func PostPullRequestMerge(service *service.Service) http.HandlerFunc {
 			return
 		}
 
-		pr, err := service.MergePullRequest(r.Context(), prID)
+		pr, err := h.service.MergePullRequest(r.Context(), prID)
 		if err != nil {
-			handleDomainError(w, err)
+			handleDomainError(w, err, h.logger)
 			return
 		}
 
@@ -107,7 +106,7 @@ func PostPullRequestMerge(service *service.Service) http.HandlerFunc {
 	}
 }
 
-func PostPullRequestReassign(service *service.Service) http.HandlerFunc {
+func (h *Handlers) PostPullRequestReassign() http.HandlerFunc {
 	type request struct {
 		PullRequestId string `json:"pull_request_id"`
 		OldReviewerId string `json:"old_reviewer_id"`
@@ -137,9 +136,9 @@ func PostPullRequestReassign(service *service.Service) http.HandlerFunc {
 		}
 
 		ctx := r.Context()
-		pr, newReviewerID, err := service.ReassignPullRequestReviewer(ctx, prID, oldReviewerID)
+		pr, newReviewerID, err := h.service.ReassignPullRequestReviewer(ctx, prID, oldReviewerID)
 		if err != nil {
-			handleDomainError(w, err)
+			handleDomainError(w, err, h.logger)
 			return
 		}
 

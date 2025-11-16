@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/CargoMan0/avito-tech-task/internal/http/handlers"
 	"github.com/CargoMan0/avito-tech-task/internal/http/handlers/routes"
 	"github.com/CargoMan0/avito-tech-task/internal/repository/impl"
 	"github.com/CargoMan0/avito-tech-task/internal/service"
@@ -92,7 +93,9 @@ func run() (err error) {
 	)
 
 	mux := http.NewServeMux()
-	routes.SetupRoutes(mux, srvc)
+
+	hlrs := handlers.New(srvc, logger)
+	routes.SetupRoutes(mux, hlrs)
 
 	srv := &http.Server{
 		Addr:    cfg.HTTPServer.ListenAddr,

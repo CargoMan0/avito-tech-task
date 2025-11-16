@@ -1,6 +1,8 @@
 package service
 
-import "github.com/CargoMan0/avito-tech-task/internal/repository"
+import (
+	"github.com/CargoMan0/avito-tech-task/internal/repository"
+)
 
 type Service struct {
 	pullRequestRepository repository.PullRequestRepository

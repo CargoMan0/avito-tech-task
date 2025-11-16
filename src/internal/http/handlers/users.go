@@ -2,12 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/CargoMan0/avito-tech-task/internal/service"
 	"github.com/google/uuid"
 	"net/http"
 )
 
-func PostUsersSetIsActive(svc *service.Service) http.HandlerFunc {
+func (h *Handlers) PostUsersSetIsActive() http.HandlerFunc {
 	type request struct {
 		UserID   string `json:"user_id"`
 		IsActive bool   `json:"is_active"`
@@ -32,9 +31,9 @@ func PostUsersSetIsActive(svc *service.Service) http.HandlerFunc {
 		}
 
 		ctx := r.Context()
-		user, err := svc.SetUserIsActive(ctx, req.IsActive, userID)
+		user, err := h.service.SetUserIsActive(ctx, req.IsActive, userID)
 		if err != nil {
-			handleDomainError(w, err)
+			handleDomainError(w, err, h.logger)
 			return
 		}
 
@@ -59,7 +58,7 @@ func PostUsersSetIsActive(svc *service.Service) http.HandlerFunc {
 	}
 }
 
-func GetUsersReview(svc *service.Service) http.HandlerFunc {
+func (h *Handlers) GetUsersReview() http.HandlerFunc {
 	type response struct {
 		UserID       string                `json:"user_id"`
 		PullRequests []pullRequestShortDTO `json:"pull_requests"`
@@ -75,9 +74,9 @@ func GetUsersReview(svc *service.Service) http.HandlerFunc {
 		}
 
 		ctx := r.Context()
-		prs, err := svc.GetUserReviews(ctx, userID)
+		prs, err := h.service.GetUserReviews(ctx, userID)
 		if err != nil {
-			handleDomainError(w, err)
+			handleDomainError(w, err, h.logger)
 			return
 		}
 
