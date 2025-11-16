@@ -29,9 +29,9 @@ func AuthMiddleware(next http.Handler) http.HandlerFunc {
 
 		var role string
 		switch token {
-		case AdminToken:
+		case "Bearer " + AdminToken:
 			role = RoleAdmin
-		case UserToken:
+		case "Bearer " + UserToken:
 			role = RoleUser
 		default:
 			http.Error(w, "invalid token", http.StatusUnauthorized)
