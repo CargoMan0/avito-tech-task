@@ -70,17 +70,6 @@ func pullRequestShortFromDomain(pullRequest *domain.PullRequest) pullRequestShor
 	}
 }
 
-func tryConvertStatusToDomain(status string) (domain.PullRequestStatus, error) {
-	switch status {
-	case "MERGED":
-		return domain.PullRequestStatusMerged, nil
-	case "OPEN":
-		return domain.PullRequestStatusOpen, nil
-	default:
-		return 0, fmt.Errorf("invalid string: (%s)", status)
-	}
-}
-
 func convertPRStatusFromDomain(status domain.PullRequestStatus) string {
 	switch status {
 	case domain.PullRequestStatusMerged:

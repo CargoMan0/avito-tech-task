@@ -101,8 +101,6 @@ func (h *Handlers) PostPullRequestMerge() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-
-		return
 	}
 }
 
@@ -152,7 +150,5 @@ func (h *Handlers) PostPullRequestReassign() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-
-		return
 	}
 }

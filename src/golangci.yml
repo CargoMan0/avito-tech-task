@@ -1,0 +1,21 @@
+version: "2"
+
+run:
+  timeout: 3m
+
+linters:
+  enable:
+    - govet # Официальный линтер от Go Team.
+    - staticcheck # Статический анализатор кода.
+    - revive # Обеспечивает единый стиль кода всему проекту.
+    - ineffassign # Находит неиспользуемые переменные.
+    - goconst # Находит повторяющиеся литералы.
+
+linters-settings:
+  revive:
+    rules:
+      - name: indent-error-flow
+      - name: var-naming
+
+issues:
+  exclude-use-default: false

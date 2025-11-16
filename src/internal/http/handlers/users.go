@@ -53,8 +53,6 @@ func (h *Handlers) PostUsersSetIsActive() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-
-		return
 	}
 }
 
