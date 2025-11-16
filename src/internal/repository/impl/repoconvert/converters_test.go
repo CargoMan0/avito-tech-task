@@ -1,4 +1,4 @@
-package impl
+package repoconvert
 
 import (
 	"github.com/CargoMan0/avito-tech-task/internal/domain"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func Test_statusFromDomainToEnum(t *testing.T) {
+func TestStatusFromDomainToEnum(t *testing.T) {
 	type args struct {
 		pullRequestStatus domain.PullRequestStatus
 	}
@@ -43,19 +43,19 @@ func Test_statusFromDomainToEnum(t *testing.T) {
 			if tt.wantPanic {
 				defer func() {
 					if r := recover(); r == nil {
-						t.Errorf("statusFromDomainToEnum() expected panic, but did not panic")
+						t.Errorf("StatusFromDomainToEnum() expected panic, but did not panic")
 					}
 				}()
 			}
 
-			if got := statusFromDomainToEnum(tt.args.pullRequestStatus); got != tt.want {
-				t.Errorf("statusFromDomainToEnum() = %v, want %v", got, tt.want)
+			if got := StatusFromDomainToEnum(tt.args.pullRequestStatus); got != tt.want {
+				t.Errorf("StatusFromDomainToEnum() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_prStatusScanner_Scan(t *testing.T) {
+func TestPRStatusScanner_Scan(t *testing.T) {
 	type args struct {
 		src any
 	}
@@ -138,7 +138,7 @@ func Test_prStatusScanner_Scan(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := &prStatusScanner{}
+			a := &PRStatusScanner{}
 			err := a.Scan(tt.args.src)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Scan() error = %v", err)

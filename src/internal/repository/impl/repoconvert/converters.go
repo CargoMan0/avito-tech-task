@@ -1,4 +1,4 @@
-package impl
+package repoconvert
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"github.com/CargoMan0/avito-tech-task/internal/domain"
 )
 
-func statusFromDomainToEnum(s domain.PullRequestStatus) string {
+func StatusFromDomainToEnum(s domain.PullRequestStatus) string {
 	switch s {
 	case domain.PullRequestStatusOpen:
 		return "OPEN"
@@ -17,11 +17,11 @@ func statusFromDomainToEnum(s domain.PullRequestStatus) string {
 	}
 }
 
-type prStatusScanner struct {
+type PRStatusScanner struct {
 	Status domain.PullRequestStatus
 }
 
-func (p *prStatusScanner) Scan(src any) error {
+func (p *PRStatusScanner) Scan(src any) error {
 	if src == nil {
 		return errors.New("src is nil")
 	}
@@ -36,7 +36,7 @@ func (p *prStatusScanner) Scan(src any) error {
 	}
 }
 
-func (p *prStatusScanner) scanString(v string) error {
+func (p *PRStatusScanner) scanString(v string) error {
 	switch v {
 	case "OPEN":
 		p.Status = domain.PullRequestStatusOpen

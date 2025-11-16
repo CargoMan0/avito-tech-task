@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/CargoMan0/avito-tech-task/internal/domain"
 	"github.com/CargoMan0/avito-tech-task/internal/repository"
+	"github.com/CargoMan0/avito-tech-task/internal/repository/impl/repoconvert"
 	"github.com/google/uuid"
 	"strings"
 	"time"
@@ -53,7 +54,7 @@ func (p *PullRequestRepository) CreatePullRequest(ctx context.Context, pr *domai
 		}
 	}()
 
-	statusSQL := statusFromDomainToEnum(pr.Status)
+	statusSQL := repoconvert.StatusFromDomainToEnum(pr.Status)
 	err = tx.QueryRowContext(ctx, insertPRQuery, pr.ID, time.Now(), pr.Name, pr.AuthorID, statusSQL, pr.NeedMoreReviewers).Err()
 	if err != nil {
 		return fmt.Errorf("run insert pull request sql query: %w", err)
@@ -107,7 +108,7 @@ func (p *PullRequestRepository) GetPullRequestByID(ctx context.Context, pullRequ
 	}
 
 	nullTimeScanner := sql.NullTime{}
-	sc := prStatusScanner{}
+	sc := repoconvert.PRStatusScanner{}
 	err := p.db.QueryRowContext(ctx, getPRQuery, pullRequestID).Scan(&pr.Name, &pr.AuthorID, &sc, &pr.NeedMoreReviewers, &nullTimeScanner)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -164,7 +165,7 @@ func (p *PullRequestRepository) GetPullRequestsByReviewerID(ctx context.Context,
 	for rows.Next() {
 		pr := domain.PullRequest{}
 		nullTimeScanner := sql.NullTime{}
-		sc := prStatusScanner{}
+		sc := repoconvert.PRStatusScanner{}
 
 		err = rows.Scan(&pr.ID, &pr.Name, &sc, &pr.NeedMoreReviewers, &pr.AuthorID, &nullTimeScanner)
 		if err != nil {
@@ -182,7 +183,7 @@ func (p *PullRequestRepository) GetPullRequestsByReviewerID(ctx context.Context,
 func (p *PullRequestRepository) UpdatePullRequestStatusAndMergedAt(ctx context.Context, status domain.PullRequestStatus, pullRequestID uuid.UUID, mergedAt time.Time) error {
 	const query = `UPDATE pull_requests SET status = $1, merged_at = $2 WHERE id = $3`
 
-	statusSQL := statusFromDomainToEnum(status)
+	statusSQL := repoconvert.StatusFromDomainToEnum(status)
 
 	res, err := p.db.ExecContext(ctx, query, statusSQL, mergedAt, pullRequestID)
 	if err != nil {
