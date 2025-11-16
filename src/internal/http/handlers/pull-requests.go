@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/CargoMan0/avito-tech-task/internal/service/dto"
 	"github.com/google/uuid"
+	"log/slog"
 	"net/http"
 )
 
@@ -54,6 +55,10 @@ func (h *Handlers) PostPullRequest() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
+			h.logger.Error("failed to encode create pull request response",
+				slog.String("error", err.Error()),
+			)
+
 			return
 		}
 	}
@@ -94,6 +99,10 @@ func (h *Handlers) PostPullRequestMerge() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
+			h.logger.Error("failed to encode merge pull request response",
+				slog.String("error", err.Error()),
+			)
+
 			return
 		}
 	}
@@ -143,6 +152,10 @@ func (h *Handlers) PostPullRequestReassign() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
+			h.logger.Error("failed to encode reassign pull request response",
+				slog.String("error", err.Error()),
+			)
+
 			return
 		}
 	}

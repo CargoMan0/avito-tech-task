@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 )
 
@@ -39,6 +40,10 @@ func (h *Handlers) PostTeam() http.HandlerFunc {
 
 		err = json.NewEncoder(w).Encode(req)
 		if err != nil {
+			h.logger.Error("failed to encode create team response",
+				slog.String("error", err.Error()),
+			)
+
 			return
 		}
 	}
@@ -75,6 +80,10 @@ func (h *Handlers) GetTeam() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
+			h.logger.Error("failed to encode get team response",
+				slog.String("error", err.Error()),
+			)
+
 			return
 		}
 	}
