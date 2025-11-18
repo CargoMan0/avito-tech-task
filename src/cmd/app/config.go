@@ -15,31 +15,31 @@ type Config struct {
 }
 
 type HTTPServer struct {
-	ListenAddr      string        `env:"LISTEN_ADDR,notEmpty"`
-	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT,notEmpty"`
+	ListenAddr      string        `env:"LISTEN_ADDR" envDefault:"0.0.0.0:3000"`
+	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT" envDefault:"5s"`
 }
 
 type Database struct {
-	Host     string `env:"HOST,notEmpty"`
-	Port     int    `env:"PORT,notEmpty"`
-	User     string `env:"USER,notEmpty"`
-	Password string `env:"PASSWORD,notEmpty"`
-	Name     string `env:"NAME,notEmpty"`
-	SSLMode  string `env:"SSL_MODE,notEmpty"`
+	Host     string `env:"HOST" envDefault:"db"`
+	Port     int    `env:"PORT" envDefault:"5432"`
+	User     string `env:"USER" envDefault:"dev"`
+	Password string `env:"PASSWORD" envDefault:"dev"`
+	Name     string `env:"NAME" envDefault:"dev"`
+	SSLMode  string `env:"SSL_MODE" envDefault:"disable"`
 }
 
 type Logger struct {
-	LogLevel int  `env:"LOG_LEVEL,notEmpty"`
-	IsJSON   bool `env:"IS_JSON,notEmpty"`
+	LogLevel int  `env:"LOG_LEVEL" envDefault:"-4"`
+	IsJSON   bool `env:"IS_JSON" envDefault:"false"`
 }
 
 type Migrations struct {
-	Dir     string `env:"DIR,notEmpty"`
-	Enabled bool   `env:"ENABLED" envDefault:"false"`
+	Dir     string `env:"DIR" envDefault:"./migrations"`
+	Enabled bool   `env:"ENABLED" envDefault:"true"`
 }
 
 type Auth struct {
-	Secret string `env:"SECRET,notEmpty"`
+	Secret string `env:"SECRET" envDefault:"ultra-secret-jwt"`
 }
 
 func loadConfigFromEnv() (Config, error) {
