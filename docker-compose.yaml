@@ -11,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U $DATABASE_USER -d $DATABASE_NAME"
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   app:
     container_name: app
@@ -20,7 +25,8 @@ services:
     ports:
       - "8080:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: no
 
 volumes:
